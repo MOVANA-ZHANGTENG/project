@@ -168,6 +168,8 @@ mes:
 
 seagate:
     P1apiUrl: https://api-dev.seagate.com/rest/iscm/asrs/postEvents
+    P1FinallyApiUrl: https://api-dev.seagate.com/rest/iscm/asrs/event/status
+    P1FinallyApiKey: eed810fa-2ebd-4991-b805-f9eefd46492d
     P4apiUrl: https://api-dev.seagate.com/rest/iscm/asrs/postEvents
     P6apiUrl: https://api-dev.seagate.com/rest/iscm/asrs/postEvents
     P9apiUrl: https://api-dev.seagate.com/rest/iscm/asrs/queryP9Inventory
