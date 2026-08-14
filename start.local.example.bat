@@ -1,12 +1,14 @@
 @echo off
 rem Copy this file to start.local.bat and adjust the values for each server.
 rem start.bat will load start.local.bat automatically if it exists.
+rem Database connection is loaded from resources/application-{active}.yml by default.
 
-rem Example:
+rem Set MYSQL_CMD only when mysql.exe is not available in PATH.
 rem set "MYSQL_CMD=C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe"
 
-set "DB_HOST=localhost"
-set "DB_PORT=3308"
-set "DB_NAME=wms"
-set "DB_USER=root"
-set "DB_PASS=12345"
+rem Optional overrides, normally not needed:
+rem set "DB_HOST=localhost"
+rem set "DB_PORT=3306"
+rem set "DB_NAME=deer_wms_xj"
+rem set "DB_USER=root"
+rem set "DB_PASS=root"

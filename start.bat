@@ -7,6 +7,31 @@ set "LOG_DIR=%APP_HOME%logs"
 set "SQL_DIR=%APP_HOME%sql\startup"
 set "SQL_DONE_DIR=%SQL_DIR%\.done"
 set "LOCAL_ENV_FILE=%APP_HOME%start.local.bat"
+set "CONFIG_DIR=%APP_HOME%resources"
+set "APP_CONFIG_FILE=%CONFIG_DIR%\application.yml"
+set "ACTIVE_PROFILE="
+
+if exist "%APP_CONFIG_FILE%" (
+    for /f "tokens=2 delims=:" %%I in ('findstr /r /c:"^[ ]*active:" "%APP_CONFIG_FILE%" 2^>nul') do (
+        if not defined ACTIVE_PROFILE set "ACTIVE_PROFILE=%%I"
+    )
+)
+set "ACTIVE_PROFILE=%ACTIVE_PROFILE: =%"
+if not defined ACTIVE_PROFILE set "ACTIVE_PROFILE=xj2"
+set "DB_CONFIG_FILE=%CONFIG_DIR%\application-%ACTIVE_PROFILE%.yml"
+
+if exist "%DB_CONFIG_FILE%" (
+    echo Loading database config from "%DB_CONFIG_FILE%"...
+    for /f "usebackq tokens=1,* delims==" %%A in (`powershell -NoProfile -ExecutionPolicy Bypass -Command "$dbPath='%DB_CONFIG_FILE%'; if (Test-Path $dbPath) { $lines=Get-Content $dbPath; $url=$null; $urlIndex=-1; for ($i=0; $i -lt $lines.Count; $i++) { if ($lines[$i] -match '^\s*url\s*:\s*(jdbc:mysql://\S+)') { $url=$matches[1]; $urlIndex=$i; break } }; if ($url) { if ($url -match '^jdbc:mysql://([^:/?]+)(?::(\d+))?/([^?;]+)') { 'DB_HOST=' + $matches[1]; if ($matches[2]) { 'DB_PORT=' + $matches[2] } else { 'DB_PORT=3306' }; 'DB_NAME=' + $matches[3] }; for ($j=$urlIndex+1; $j -lt [Math]::Min($urlIndex+8,$lines.Count); $j++) { if ($lines[$j] -match '^\s*username\s*:\s*(.*)$') { 'DB_USER=' + $matches[1].Trim(); break } }; for ($j=$urlIndex+1; $j -lt [Math]::Min($urlIndex+8,$lines.Count); $j++) { if ($lines[$j] -match '^\s*password\s*:\s*(.*)$') { 'DB_PASS=' + $matches[1].Trim(); break } } } }"`) do (
+        if /i "%%A"=="DB_HOST" set "DB_HOST=%%B"
+        if /i "%%A"=="DB_PORT" set "DB_PORT=%%B"
+        if /i "%%A"=="DB_NAME" set "DB_NAME=%%B"
+        if /i "%%A"=="DB_USER" set "DB_USER=%%B"
+        if /i "%%A"=="DB_PASS" set "DB_PASS=%%B"
+    )
+) else (
+    echo WARN: Database config file not found: "%DB_CONFIG_FILE%"
+)
 
 if exist "%LOCAL_ENV_FILE%" call "%LOCAL_ENV_FILE%"
 
@@ -15,17 +40,30 @@ if not defined MYSQL_CMD (
         if not defined MYSQL_CMD set "MYSQL_CMD=%%I"
     )
 )
-if not defined DB_HOST set "DB_HOST=localhost"
-if not defined DB_PORT set "DB_PORT=3308"
-if not defined DB_NAME set "DB_NAME=wms"
-if not defined DB_USER set "DB_USER=root"
-if not defined DB_PASS set "DB_PASS=12345"
 
 if not exist "%LOG_DIR%" mkdir "%LOG_DIR%"
 
 echo Starting application...
 echo Info: Logging to console and saving to "%LOG_DIR%" (tomLog keeps 3 days).
 echo -------------------------------------------------------------------
+
+if not defined DB_HOST (
+    echo ERROR: DB_HOST not found. Please check "%DB_CONFIG_FILE%" or set DB_* in "%LOCAL_ENV_FILE%".
+    pause
+    exit /b 1
+)
+if not defined DB_PORT set "DB_PORT=3306"
+if not defined DB_NAME (
+    echo ERROR: DB_NAME not found. Please check "%DB_CONFIG_FILE%" or set DB_* in "%LOCAL_ENV_FILE%".
+    pause
+    exit /b 1
+)
+if not defined DB_USER (
+    echo ERROR: DB_USER not found. Please check "%DB_CONFIG_FILE%" or set DB_* in "%LOCAL_ENV_FILE%".
+    pause
+    exit /b 1
+)
+if not defined DB_PASS set "DB_PASS="
 
 "%MYSQL_CMD%" --version >nul 2>nul
 if errorlevel 1 (
