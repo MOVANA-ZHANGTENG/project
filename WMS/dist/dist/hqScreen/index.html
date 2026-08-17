@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>仓库数据看板</title>
+    <!-- 引入 Vue2 -->
+    <script src="vue.js"></script>
+    <!-- 引入 ECharts -->
+    <script src="echarts.js"></script>
+ 
+
+    <script src="dataV.js"></script>
+
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="element.css">
+    <!-- 引入组件库 -->
+    <script src="element.js"></script>
+    <script src="jq.js"></script>
+
+    <style>
+        body {
+            background-color: #111827;
+            color: #e5e7eb;
+            font-family: Arial, sans - serif;
+            padding: 20px;
+            margin: 0;
+        }
+ 
+
+       .number-box {
+            border-radius: 8px;
+            padding:5px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+       .number-box:hover {
+            transform: translateY(-5px);
+        }
+
+       .number-box:nth-child(1) {
+            background: linear-gradient(to bottom right, #3498db, #0ec469);
+        }
+
+       .number-box:nth-child(2) {
+            background: linear-gradient(to bottom right, #2ecc71, #a49709);
+        }
+
+       .number-box:nth-child(3) {
+            background: linear-gradient(to bottom right, #3498db, #b92948);
+        }
+
+       .number-box:nth-child(4) {
+            background: linear-gradient(to bottom right, #2ecc71, #391ed3);
+        }
+
+       .number-box h3 {
+            margin: 0;
+            color: #ecf0f1;
+            font-size: 2.2vh;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+       .number-box p {
+            font-size: 2vh;
+            margin: 10px 0 0;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+       .chart {
+            background-color: #1f2937;
+            border-radius: 8px;
+            padding: 0px;
+            padding-top: 10px;
+            /* margin-bottom: 20px; */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            height: 30vh;
+            margin-right: 10px;
+        }
+
+       .card {
+            background-color: #1f2937;
+            border-radius: 8px;
+            padding-top: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            height: 30vh;
+            padding-left: 50px;
+ 
+        }
+
+       .card h3 {
+            margin-top: 0;
+            color:  #0ec469;
+            font-size: 18px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+       .card .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #1f2937;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #374151;
+        }
+
+        th {
+            color: #9ca3af;
+        }
+
+        @media (min-width: 768px) {
+           .top-row {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 20px;
+            }
+
+           .middle-row {
+                display: grid;
+                grid-template-columns: 2fr 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div style="width:100vw;height:15vh">
+            <el-row>
+                <el-col :span="6" style="color: #111827;">   1</el-col>
+                <el-col :span="12">
+                    <div style="width:100%;margin-top: 5px; text-align: center"> <img  style="width:70%"  src="hq.png" /> </div>
+                </el-col>
+                <el-col :span="6">   
+                    <div style="width:100%;margin-top: 15px;  padding-left: 10%;font-size: 2vh;">  {{currentTime }}</div>
+                </el-col>
+              </el-row>
+         
+            
+          
+        </div>
+     <!--  <div style="width:100vw;height:80px; ">
+            <el-row>
+                <el-col :span="6">   <dv-decoration-1 style="width:20vw;height:50px;float:left" /> </el-col>
+              
+              
+             
+                <el-col :span="6">  <dv-decoration-8   style="width:300px;height:50px;float:right" />   </el-col>
+                
+                <el-col :span="6">  
+                    <dv-decoration-8 :reverse="true" style="width:300px;height:50px;float:left" /></el-col>
+
+                    <el-col :span="6">   <dv-decoration-1 style="width:20vw;height:50px;float:right" /></el-col>
+              </el-row> 
+        </div>-->
+
+       
+
+
+        
+       
+        <div class="top-row">
+            <div class="number-box">
+                <h3>库位总数</h3>
+                <p>{{ CellReport.totalCell }}</p>
+            </div>
+            <div class="number-box">
+                <h3>空库位数</h3>
+                <p>{{ CellReport.emptyCell  }}</p>
+            </div>
+            <div class="number-box">
+                <h3>在库空托盘数</h3>
+                <p>{{ CellReport.totalCell -CellReport.emptyCell-CellReport.noEmptyPallet  }}</p>
+            </div>
+            <div class="number-box">
+                <h3>在库有货托盘数</h3>
+                <p>{{ CellReport.noEmptyPallet  }}</p>
+            </div>
+        </div>
+        <el-row>
+            <el-col :span="15">
+                <div class="chart" id="barChart"></div>
+            </el-col>
+            <el-col :span="9">
+                <div class="card">
+<div style="width:100%;text-align: center">
+  <h3 v-if="lineCode=='1'">1号操作台</h3>
+                    <h3 v-if="lineCode=='2'">2号操作台</h3>
+</div>
+                  
+                        <el-row>
+                            <el-col :span="10">
+                                <div style="font-size: 1.5vh;line-height: 3vh;">托盘号</div>
+                                <div style="font-size: 1.5vh;line-height: 3vh;">格子</div>
+                                <div style="font-size: 1.5vh;line-height: 3vh;">物料</div>
+                                <div style="font-size: 1.5vh;line-height: 3vh;">拣货数量</div>
+                            </el-col>
+                            <el-col :span="14">
+                                <div  style="font-size: 1.5vh;line-height: 3vh;">{{piakTask.pallet_code}}</div>
+                                <div  style="font-size: 1.5vh;line-height: 3vh;">{{piakTask.pallet_grid}}</div>
+                                <div  style="font-size: 1.5vh;line-height: 3vh;">{{piakTask.item_name}}</div>
+                                <div  style="font-size: 1.5vh;line-height: 3vh;">{{piakTask.quantity}}</div>
+                            </el-col>
+                           
+                          </el-row>
+                       
+                         
+                   
+                </div>
+            </el-col>
+          </el-row>
+        
+           
+            
+        
+        <div>
+            <table style="font-size: 1.8vh;">
+                <thead>
+                    <tr>
+                        <th v-for="column in tableColumns" :key="column.prop">{{ column.label }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="item in tableData" :key="item.trayNumber">
+                        <td>{{ item.boxCode }}</td>
+                        <td>{{ item.type }}</td>
+                        <td>{{ item.fromCellCode }}</td>
+                        <td>{{ item.toCellCode }}</td>
+                        <td>{{ item.createTime }}</td>
+                        <td>{{ item.memo }}</td>
+                       
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data() {
+                return {
+                    piakTask:{},
+                    CellReport:{},
+                    lineCode:null,
+                    currentTime:null,
+                    timer:null,
+                    timer2:null,
+                    url:"http://192.168.99.80:8008/wms",
+                    tableColumns: [
+                        {
+                            prop: 'trayNumber',
+                            label: '托盘号'
+                        },
+                        {
+                            prop: 'type',
+                            label: '类型'
+                        },
+                        {
+                            prop: 'startPosition',
+                            label: '起始位置'
+                        },
+                        {
+                            prop: 'targetPosition',
+                            label: '目标位置'
+                        },
+                        {
+                            prop: 'createTime',
+                            label: '创建时间'
+                        },
+                        {
+                            prop: 'info',
+                            label: '信息'
+                        },
+                       
+                    ],
+                    tableData: [
+                        {
+                            trayNumber: 'HQ00616|712',
+                            startPosition: 'A01-25-8',
+                            targetPosition: '5',
+                            createTime: '2025-04-24 15:18:43',
+                            info: '输送线出库【执行中】终...',
+                            type: '出库'
+                        }
+                    ],
+                    myChart:null,
+                    taskWeekReportOption:{
+  grid: {
+    top: 50,      // 上边距
+    right: 40,    // 右边距
+    bottom: 10,   // 下边距（关键调整项）
+    left:40,     // 左边距
+    containLabel: true  // 确保坐标轴标签在 grid 区域内
+  },
+                                tooltip: {
+                                    trigger: 'axis',
+                                    axisPointer: {
+                                        type: 'shadow'
+                                    }
+                                },
+                                legend: {
+                                    data: ['入库次数', '出库次数'],
+                                    textStyle: {
+                                        color: '#e5e7eb'
+                                    }
+                                },
+                                xAxis: {
+                                    type: 'category',
+                                    data: ['2025-04-23','2025-04-24'],
+                                    axisLine: {
+                                        lineStyle: {
+                                            color: '#e5e7eb'
+                                        }
+                                    },
+                                    axisLabel: {
+                                        color: '#e5e7eb'
+                                    }
+                                },
+                                yAxis: {
+                                    type: 'value',
+ type: 'value',
+  minInterval: 1,  // 最小间隔为1
+                                    splitLine:false,
+                                    axisLine: {
+ 		        show:false,
+                                        lineStyle: {
+                                            color: '#e5e7eb'
+                                        }
+                                    },
+                                    axisLabel: {
+                                        color: '#e5e7eb',
+ 
+                                    }
+                                },
+dataZoom: [{
+  type: 'inside',
+  yAxisIndex: 0,
+  filterMode: 'empty',
+  zoomLock: true // 锁定缩放比例，防止产生小数
+}],
+                                series: [
+                                    {
+                                        name: '入库次数',
+                                        type: 'bar',
+                                        data: [1,2],
+                                        label: {
+                                            show: true,
+                                            position: 'top',
+                                            color: '#e5e7eb'
+                                        }
+                                    },
+                                    {
+                                        name: '出库次数',
+                                        type: 'bar',
+                                        data: [2,6],
+                                        label: {
+                                            show: true,
+                                            position: 'top',
+                                            color: '#e5e7eb'
+                                        }
+                                    },
+                                    
+                                ]
+                        }
+                };
+            },
+            mounted() {
+                var that=this;
+                that.lineCode = that.getParameterByName("lineCode");
+                setTimeout(() => {
+                    this.$nextTick(() => {
+                        // 在这里初始化 echarts
+                        const chartDom = document.getElementById('barChart');
+                        if (chartDom) {
+                            // 初始化 echarts 实例
+                            that.myChart = echarts.init(chartDom);
+                            // 设置图表配置项
+                             
+                    }
+                });
+                },500);
+              
+
+                this.timer = setInterval(() => {
+                  this.updateDateTime();
+                }, 1000);
+                this.timer2 = setInterval(() => {
+                  this.getWeekTaskReport();
+                  this.getTasks();
+                  this.getCellReport();
+                  this.getPickTask();
+                }, 1000);
+            } ,
+            beforeDestroy() {
+                clearInterval(this.timer);
+                clearInterval(this.timer2);
+            },
+           
+            methods:{
+           
+                updateDateTime() {
+                    const now = new Date();
+                    const year = now.getFullYear();
+                    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+                    const day = now.getDate().toString().padStart(2, '0');
+                    const hours = now.getHours().toString().padStart(2, '0');
+                    const minutes = now.getMinutes().toString().padStart(2, '0');
+                    const seconds = now.getSeconds().toString().padStart(2, '0');
+                    this.currentTime =year+  "-"+month+"-"+day+"-"+" "+hours+":"+minutes+":"+seconds
+                   
+                },
+                getParameterByName(name) {
+                        const url = window.location.href;
+                        name = name.replace(/[\[\]]/g, '\\$&');
+                        const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
+                        const results = regex.exec(url);
+                        if (!results) return null;
+                        if (!results[2]) return '';
+                        return decodeURIComponent(results[2].replace(/\+/g, ' '));
+                },
+
+                getWeekTaskReport(wareCode) {
+                    var that = this;
+                    $.ajax({
+                    url:  that.url+"/wms-wcs/taskInfo/TaskWeekReport"  ,
+                    dataType: "json",
+                    type: "get",
+                    async: false,
+                    headers: {
+                        Accept: "*/*",
+                    },
+                    beforeSend: function () { },
+                    contentType: "application/json;charset=utf-8", //这个参数也是header参数
+                    processData: false, //不去处理发送的数据
+                    error: function (res) {
+
+                    },
+                    success: function (res) { 
+                        if (res.code == 200) {
+                            that.taskWeekReportOption.xAxis.data=[];
+                            that.taskWeekReportOption.series[0].data=[];
+                            that.taskWeekReportOption.series[1].data=[];
+                            var data = res.data;
+                            for (let index = 0; index < data.length; index++) {
+                                const element = data[index];
+                                that.taskWeekReportOption.xAxis.data.push(element.taskDate.substring(5, 10));
+                                var outCount=element.outCount==null?0:element.outCount;
+                                var inCount=element.inCount==null?0:element.inCount;
+                                that.taskWeekReportOption.series[0].data.push(inCount);
+                                that.taskWeekReportOption.series[1].data.push(outCount);
+                            } 
+                            that.myChart.setOption(that.taskWeekReportOption);
+                        }
+                        else {
+
+                        }
+
+                    },
+                    });
+                },
+
+                getCellReport(wareCode) {
+                    var that = this;
+                    $.ajax({
+                    url:  that.url+"/wms-wcs/taskInfo/CellReport"  ,
+                    dataType: "json",
+                    type: "get",
+                    async: false,
+                    headers: {
+                        Accept: "*/*",
+                    },
+                    beforeSend: function () { },
+                    contentType: "application/json;charset=utf-8", //这个参数也是header参数
+                    processData: false, //不去处理发送的数据
+                    error: function (res) {
+
+                    },
+                    success: function (res) { 
+                        if (res.code == 200) {
+                            that.CellReport=res.data;
+                             
+                        } 
+                    },
+                    });
+                },
+
+          
+
+            getPickTask( ) {
+                var that = this;
+                $.ajax({
+                url:  that.url+"/fromWcs/hq5_11?lineCode=" + this.lineCode,
+                dataType: "json",
+                type: "get",
+                async: false,
+                headers: {
+                    Accept: "*/*",
+                },
+                beforeSend: function () { },
+                contentType: "application/json;charset=utf-8", //这个参数也是header参数
+                processData: false, //不去处理发送的数据
+                error: function (res) {
+
+                },
+                success: function (res) { 
+                    if (res.code == 200) {
+                        that.piakTask=res.data;
+                        
+                    } 
+                },
+                });
+            },
+
+                
+
+                getTasks() {
+                    var that = this;
+                    var lineCode =this.lineCode; 
+                    $.ajax({
+                    url:  that.url+"/wms-wcs/taskInfo/findByCzt?lineCode=" + lineCode,
+                    dataType: "json",
+                    type: "get",
+                    async: false,
+                    headers: {
+                        Accept: "*/*",
+                    },
+                    beforeSend: function () { },
+                    contentType: "application/json;charset=utf-8", //这个参数也是header参数
+                    processData: false, //不去处理发送的数据
+                    error: function (res) {
+
+                    },
+                    success: function (res) { 
+                        if (res.code == 200) {
+                             
+                            var data = res.rows;
+                           
+                            for (let index = 0; index < data.length; index++) {
+                                const element = data[index];
+                                if(element.type=="1"){
+                                    element.type="入库";
+                                }
+                                if(element.type=="2"){
+                                    element.type="出库";
+                                }
+                                
+                            }
+                            that.tableData =  data;
+                             
+                            
+                        }
+                        else {
+
+                        }
+
+                         
+                  
+                    },
+                    });
+                },
+
+            }
+        });
+    </script>
+</body>
+
+</html>    

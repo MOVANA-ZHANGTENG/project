@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="wms-admin">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/target/wms-admin.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

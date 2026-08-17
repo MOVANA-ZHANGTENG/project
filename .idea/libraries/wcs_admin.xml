@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="wcs-admin">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/WCS/后端打包文件/wcs-admin.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="deeerwcs">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/WCS/WCS代码/deeerwcs.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
