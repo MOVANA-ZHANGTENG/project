@@ -179,6 +179,7 @@ seagate:
     canRun: true
 
 xj:
+    finishGoodsP1Api: http://127.0.0.1:8088/seagate/p1/finished-goods
     mail:
         p1-inventory:
             enabled: true
