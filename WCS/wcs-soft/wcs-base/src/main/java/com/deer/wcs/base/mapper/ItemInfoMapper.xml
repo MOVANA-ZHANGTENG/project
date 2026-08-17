@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.base.dao.ItemInfoMapper">
+    
+    <resultMap type="com.deer.wcs.base.model.ItemInfo" id="ItemInfoResult">
+        <result property="id"    column="id"    />
+        <result property="itemCode"    column="item_code"    />
+        <result property="itemName"    column="item_name"    />
+        <result property="spec"    column="spec"    />
+        <result property="model"    column="model"    />
+        <result property="inCellTactics"    column="in_cell_tactics"    />
+        <result property="abc"    column="abc"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="ItemInfoResult"  type="com.deer.wcs.base.model.ItemInfoDto" >
+    </resultMap>
+
+    <sql id="selectItemInfoVo">
+        select id, item_code, item_name, spec, model, in_cell_tactics, abc from item_info
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.base.model.ItemInfoCriteria" resultMap="Dto">
+        select item_info.*
+        ,item_type.name as item_type_name
+        from item_info item_info
+        left join item_type item_type on item_info.item_type_code = item_type.code
+        <where>  
+            <if test="itemCode != null  and itemCode != ''"> and item_info.item_code = #{itemCode}</if>
+            <if test="itemName != null  and itemName != ''"> and item_info.item_name like concat('%', #{itemName}, '%')</if>
+            <if test="spec != null  and spec != ''"> and item_info.spec = #{spec}</if>
+            <if test="model != null  and model != ''"> and item_info.model = #{model}</if>
+            <if test="inCellTactics != null  and inCellTactics != ''"> and item_info.in_cell_tactics = #{inCellTactics}</if>
+            <if test="abc != null  and abc != ''"> and item_info.abc = #{abc}</if>
+            <if test="itemTypeCode != null  and itemTypeCode != ''"> and item_info.item_type_code = #{itemTypeCode}</if>
+        </where>
+    </select>
+    
+    <select id="selectItemInfoById" parameterType="Long" resultMap="ItemInfoResult">
+        <include refid="selectItemInfoVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertItemInfo" parameterType="com.deer.wcs.base.model.ItemInfo" useGeneratedKeys="true" keyProperty="id">
+        insert into item_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="itemCode != null">item_code,</if>
+            <if test="itemName != null">item_name,</if>
+            <if test="spec != null">spec,</if>
+            <if test="model != null">model,</if>
+            <if test="inCellTactics != null">in_cell_tactics,</if>
+            <if test="abc != null">abc,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="itemCode != null">#{itemCode},</if>
+            <if test="itemName != null">#{itemName},</if>
+            <if test="spec != null">#{spec},</if>
+            <if test="model != null">#{model},</if>
+            <if test="inCellTactics != null">#{inCellTactics},</if>
+            <if test="abc != null">#{abc},</if>
+         </trim>
+    </insert>
+
+    <update id="updateItemInfo" parameterType="com.deer.wcs.base.model.ItemInfo">
+        update item_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="itemCode != null">item_code = #{itemCode},</if>
+            <if test="itemName != null">item_name = #{itemName},</if>
+            <if test="spec != null">spec = #{spec},</if>
+            <if test="model != null">model = #{model},</if>
+            <if test="inCellTactics != null">in_cell_tactics = #{inCellTactics},</if>
+            <if test="abc != null">abc = #{abc},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteItemInfoById" parameterType="Long">
+        delete from item_info where id = #{id}
+    </delete>
+
+    <delete id="deleteItemInfoByIds" parameterType="String">
+        delete from item_info where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

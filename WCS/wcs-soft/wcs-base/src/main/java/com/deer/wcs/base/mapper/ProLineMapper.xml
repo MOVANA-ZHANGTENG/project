@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.base.dao.ProLineMapper">
+    
+    <resultMap type="com.deer.wcs.base.model.ProLine" id="ProLineResult">
+        <result property="id"    column="id"    />
+        <result property="code"    column="code"    />
+        <result property="name"    column="name"    />
+        <result property="productId"    column="product_id"    />
+        <result property="productCode"    column="product_code"    />
+        <result property="proRouteId"    column="pro_route_id"    />
+        <result property="wareId"    column="ware_id"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="createUserId"    column="create_user_id"    />
+        <result property="createUserName"    column="create_user_name"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="uodateUserId"    column="uodate_user_id"    />
+        <result property="updateUserName"    column="update_user_name"    />
+        <result property="state"    column="state"    />
+        <result property="version"    column="version"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="ProLineResult"  type="com.deer.wcs.base.model.ProLineDto" >
+    </resultMap>
+
+    <sql id="selectProLineVo">
+        select id, code, name, product_id, pro_route_id, ware_id, create_time, create_user_id, create_user_name, update_time, uodate_user_id, update_user_name, state, version from pro_line
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.base.model.ProLineCriteria" resultMap="Dto">
+       select * from pro_line
+        <where>  
+            <if test="code != null  and code != ''"> and code = #{code}</if>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="productId != null  and productId != ''"> and product_id = #{productId}</if>
+            <if test="proRouteId != null "> and pro_route_id = #{proRouteId}</if>
+            <if test="wareId != null "> and ware_id = #{wareId}</if>
+            <if test="createUserId != null "> and create_user_id = #{createUserId}</if>
+            <if test="createUserName != null  and createUserName != ''"> and create_user_name like concat('%', #{createUserName}, '%')</if>
+            <if test="uodateUserId != null "> and uodate_user_id = #{uodateUserId}</if>
+            <if test="updateUserName != null  and updateUserName != ''"> and update_user_name like concat('%', #{updateUserName}, '%')</if>
+            <if test="state != null "> and state = #{state}</if>
+            <if test="version != null "> and version = #{version}</if>
+        </where>
+    </select>
+    
+    <select id="selectProLineById" parameterType="Long" resultMap="ProLineResult">
+        <include refid="selectProLineVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertProLine" parameterType="com.deer.wcs.base.model.ProLine">
+        insert into pro_line
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="code != null">code,</if>
+            <if test="name != null">name,</if>
+            <if test="productId != null">product_id,</if>
+            <if test="proRouteId != null">pro_route_id,</if>
+            <if test="wareId != null">ware_id,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="createUserId != null">create_user_id,</if>
+            <if test="createUserName != null">create_user_name,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="uodateUserId != null">uodate_user_id,</if>
+            <if test="updateUserName != null">update_user_name,</if>
+            <if test="state != null">state,</if>
+            <if test="version != null">version,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="code != null">#{code},</if>
+            <if test="name != null">#{name},</if>
+            <if test="productId != null">#{productId},</if>
+            <if test="proRouteId != null">#{proRouteId},</if>
+            <if test="wareId != null">#{wareId},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="createUserId != null">#{createUserId},</if>
+            <if test="createUserName != null">#{createUserName},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="uodateUserId != null">#{uodateUserId},</if>
+            <if test="updateUserName != null">#{updateUserName},</if>
+            <if test="state != null">#{state},</if>
+            <if test="version != null">#{version},</if>
+         </trim>
+    </insert>
+
+    <update id="updateProLine" parameterType="com.deer.wcs.base.model.ProLine">
+        update pro_line
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="code != null">code = #{code},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="productId != null">product_id = #{productId},</if>
+            <if test="proRouteId != null">pro_route_id = #{proRouteId},</if>
+            <if test="wareId != null">ware_id = #{wareId},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="createUserId != null">create_user_id = #{createUserId},</if>
+            <if test="createUserName != null">create_user_name = #{createUserName},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="uodateUserId != null">uodate_user_id = #{uodateUserId},</if>
+            <if test="updateUserName != null">update_user_name = #{updateUserName},</if>
+            <if test="state != null">state = #{state},</if>
+            <if test="version != null">version = #{version},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteProLineById" parameterType="Long">
+        delete from pro_line where id = #{id}
+    </delete>
+
+    <delete id="deleteProLineByIds" parameterType="String">
+        delete from pro_line where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

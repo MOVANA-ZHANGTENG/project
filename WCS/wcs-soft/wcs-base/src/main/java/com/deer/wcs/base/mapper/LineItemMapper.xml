@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.base.dao.LineItemMapper">
+    
+    <resultMap type="com.deer.wcs.base.model.LineItem" id="LineItemResult">
+        <result property="id"    column="id"    />
+        <result property="lineCode"    column="line_code"    />
+        <result property="itemCode"    column="item_code"    />
+        <result property="quantity"    column="quantity"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="LineItemResult"  type="com.deer.wcs.base.model.LineItemDto" >
+    </resultMap>
+
+    <sql id="selectLineItemVo">
+        select id, line_code, item_code, quantity from line_item
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.base.model.LineItemCriteria" resultMap="Dto">
+       select line_item.*
+        ,item_info.item_name
+        ,pro_line.name as line_name
+        from line_item line_item
+        left join pro_line pro_line on line_item.line_code = pro_line.code
+        left join item_info item_info on item_info.item_code = line_item.item_code
+        <where>
+            <if test="lineCode != null  and lineCode != ''"> and line_item.line_code = #{lineCode}</if>
+            <if test="itemCode != null  and itemCode != ''"> and line_item.item_code = #{itemCode}</if>
+        </where>
+        order by line_item.line_code
+    </select>
+    
+    <select id="selectLineItemById" parameterType="Integer" resultMap="LineItemResult">
+        <include refid="selectLineItemVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertLineItem" parameterType="com.deer.wcs.base.model.LineItem">
+        insert into line_item
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="lineCode != null">line_code,</if>
+            <if test="itemCode != null">item_code,</if>
+            <if test="quantity != null">quantity,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="lineCode != null">#{lineCode},</if>
+            <if test="itemCode != null">#{itemCode},</if>
+            <if test="quantity != null">#{quantity},</if>
+         </trim>
+    </insert>
+
+    <update id="updateLineItem" parameterType="com.deer.wcs.base.model.LineItem">
+        update line_item
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="lineCode != null">line_code = #{lineCode},</if>
+            <if test="itemCode != null">item_code = #{itemCode},</if>
+            <if test="quantity != null">quantity = #{quantity},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteLineItemById" parameterType="Integer">
+        delete from line_item where id = #{id}
+    </delete>
+
+    <delete id="deleteLineItemByIds" parameterType="String">
+        delete from line_item where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

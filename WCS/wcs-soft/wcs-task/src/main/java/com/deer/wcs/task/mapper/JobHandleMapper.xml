@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.task.dao.JobHandleMapper">
+    
+    <resultMap type="com.deer.wcs.task.model.JobHandle" id="JobHandleResult">
+        <result property="id"    column="id"    />
+        <result property="taskId"    column="task_id"    />
+        <result property="taskNo"    column="task_no"    />
+        <result property="jobId"    column="job_id"    />
+        <result property="handleId"    column="handle_id"    />
+        <result property="type"    column="type"    />
+        <result property="className"    column="class_name"    />
+        <result property="methodName"    column="method_name"    />
+        <result property="code"    column="code"    />
+        <result property="name"    column="name"    />
+        <result property="cmdIndex"    column="cmd_index"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="createUserId"    column="create_user_id"    />
+        <result property="createUserName"    column="create_user_name"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="updateUserId"    column="update_user_id"    />
+        <result property="updateUserName"    column="update_user_name"    />
+        <result property="isDelete"    column="is_delete"    />
+        <result property="version"    column="version"    />
+        <result property="state"    column="state"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="JobHandleResult"  type="com.deer.wcs.task.model.JobHandleDto" >
+    </resultMap>
+
+    <sql id="selectJobHandleVo">
+        select id, task_id, task_no, job_id, handle_id, type, class_name, method_name, code, name, cmd_index, create_time, create_user_id, create_user_name, update_time, update_user_id, update_user_name, is_delete, version,state from job_handle
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.task.model.JobHandleCriteria" resultMap="Dto">
+        <include refid="selectJobHandleVo"/>
+        <where>  
+            <if test="taskId != null "> and task_id = #{taskId}</if>
+            <if test="taskNo != null  and taskNo != ''"> and task_no = #{taskNo}</if>
+            <if test="jobId != null "> and job_id = #{jobId}</if>
+            <if test="handleId != null "> and handle_id = #{handleId}</if>
+            <if test="type != null "> and type = #{type}</if>
+            <if test="className != null  and className != ''"> and class_name like concat('%', #{className}, '%')</if>
+            <if test="methodName != null  and methodName != ''"> and method_name like concat('%', #{methodName}, '%')</if>
+            <if test="code != null  and code != ''"> and code = #{code}</if>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="cmdIndex != null "> and cmd_index = #{cmdIndex}</if>
+            <if test="createUserId != null "> and create_user_id = #{createUserId}</if>
+            <if test="createUserName != null  and createUserName != ''"> and create_user_name like concat('%', #{createUserName}, '%')</if>
+            <if test="updateUserId != null "> and update_user_id = #{updateUserId}</if>
+            <if test="updateUserName != null  and updateUserName != ''"> and update_user_name like concat('%', #{updateUserName}, '%')</if>
+            <if test="isDelete != null "> and is_delete = #{isDelete}</if>
+            <if test="createTime != null  and createTime != ''"> and create_time like concat(#{createTime},'%')</if>
+            <if test="updateTime != null  and updateTime != ''"> and update_time like concat(#{updateTime},'%')</if>
+        </where>
+        order by job_id,'type',cmd_Index
+    </select>
+    
+    <select id="selectJobHandleById" parameterType="Long" resultMap="JobHandleResult">
+        <include refid="selectJobHandleVo"/>
+        where id = #{id}
+    </select>
+    <select id="findByJobId" resultType="com.deer.wcs.task.model.JobHandle">
+        select * from job_handle where job_id = #{jobId} order by cmd_index
+    </select>
+
+    <insert id="insertJobHandle" parameterType="com.deer.wcs.task.model.JobHandle" useGeneratedKeys="true" keyProperty="id">
+        insert into job_handle
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="taskId != null">task_id,</if>
+            <if test="taskNo != null">task_no,</if>
+            <if test="jobId != null">job_id,</if>
+            <if test="handleId != null">handle_id,</if>
+            <if test="type != null">type,</if>
+            <if test="className != null">class_name,</if>
+            <if test="methodName != null">method_name,</if>
+            <if test="code != null">code,</if>
+            <if test="name != null">name,</if>
+            <if test="cmdIndex != null">cmd_index,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="createUserId != null">create_user_id,</if>
+            <if test="createUserName != null">create_user_name,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="updateUserId != null">update_user_id,</if>
+            <if test="updateUserName != null">update_user_name,</if>
+            <if test="isDelete != null">is_delete,</if>
+            <if test="version != null">version,</if>
+            <if test="state != null">state,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="taskId != null">#{taskId},</if>
+            <if test="taskNo != null">#{taskNo},</if>
+            <if test="jobId != null">#{jobId},</if>
+            <if test="handleId != null">#{handleId},</if>
+            <if test="type != null">#{type},</if>
+            <if test="className != null">#{className},</if>
+            <if test="methodName != null">#{methodName},</if>
+            <if test="code != null">#{code},</if>
+            <if test="name != null">#{name},</if>
+            <if test="cmdIndex != null">#{cmdIndex},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="createUserId != null">#{createUserId},</if>
+            <if test="createUserName != null">#{createUserName},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="updateUserId != null">#{updateUserId},</if>
+            <if test="updateUserName != null">#{updateUserName},</if>
+            <if test="isDelete != null">#{isDelete},</if>
+            <if test="version != null">#{version},</if>
+            <if test="state != null">#{state},</if>
+         </trim>
+    </insert>
+
+    <update id="updateJobHandle" parameterType="com.deer.wcs.task.model.JobHandle">
+        update job_handle
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="taskId != null">task_id = #{taskId},</if>
+            <if test="taskNo != null">task_no = #{taskNo},</if>
+            <if test="jobId != null">job_id = #{jobId},</if>
+            <if test="handleId != null">handle_id = #{handleId},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="className != null">class_name = #{className},</if>
+            <if test="methodName != null">method_name = #{methodName},</if>
+            <if test="code != null">code = #{code},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="cmdIndex != null">cmd_index = #{cmdIndex},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="createUserId != null">create_user_id = #{createUserId},</if>
+            <if test="createUserName != null">create_user_name = #{createUserName},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="updateUserId != null">update_user_id = #{updateUserId},</if>
+            <if test="updateUserName != null">update_user_name = #{updateUserName},</if>
+            <if test="isDelete != null">is_delete = #{isDelete},</if>
+            <if test="version != null">version = #{version},</if>
+            <if test="state != null">state = #{state},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteJobHandleById" parameterType="Long">
+        delete from job_handle where id = #{id}
+    </delete>
+
+    <delete id="deleteJobHandleByIds" parameterType="String">
+        delete from job_handle where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

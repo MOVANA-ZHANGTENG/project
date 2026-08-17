@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.task.dao.AgvZoneMapper">
+    
+    <resultMap type="com.deer.wcs.task.model.AgvZone" id="AgvZoneResult">
+        <result property="id"    column="id"    />
+        <result property="code"    column="code"    />
+        <result property="wareCode"    column="ware_code"    />
+        <result property="wareName"    column="ware_name"    />
+        <result property="agvType"    column="agv_type"    />
+        <result property="agvCount"    column="agv_count"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="version"    column="version"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="AgvZoneResult"  type="com.deer.wcs.task.model.AgvZoneDto" >
+    </resultMap>
+
+    <sql id="selectAgvZoneVo">
+        select id, code, ware_code, ware_name, agv_type, agv_count, update_time, version from agv_zone
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.task.model.AgvZoneCriteria" resultMap="Dto">
+        <include refid="selectAgvZoneVo"/>
+        <where>  
+            <if test="code != null  and code != ''"> and code = #{code}</if>
+            <if test="wareCode != null  and wareCode != ''"> and ware_code = #{wareCode}</if>
+            <if test="wareName != null  and wareName != ''"> and ware_name like concat('%', #{wareName}, '%')</if>
+            <if test="agvType != null  and agvType != ''"> and agv_type = #{agvType}</if>
+            <if test="agvCount != null "> and agv_count = #{agvCount}</if>
+            <if test="version != null "> and version = #{version}</if>
+        </where>
+    </select>
+    
+    <select id="selectAgvZoneById" parameterType="Long" resultMap="AgvZoneResult">
+        <include refid="selectAgvZoneVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertAgvZone" parameterType="com.deer.wcs.task.model.AgvZone" useGeneratedKeys="true" keyProperty="id">
+        insert into agv_zone
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="code != null">code,</if>
+            <if test="wareCode != null">ware_code,</if>
+            <if test="wareName != null">ware_name,</if>
+            <if test="agvType != null">agv_type,</if>
+            <if test="agvCount != null">agv_count,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="version != null">version,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="code != null">#{code},</if>
+            <if test="wareCode != null">#{wareCode},</if>
+            <if test="wareName != null">#{wareName},</if>
+            <if test="agvType != null">#{agvType},</if>
+            <if test="agvCount != null">#{agvCount},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="version != null">#{version},</if>
+         </trim>
+    </insert>
+
+    <update id="updateAgvZone" parameterType="com.deer.wcs.task.model.AgvZone">
+        update agv_zone
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="code != null">code = #{code},</if>
+            <if test="wareCode != null">ware_code = #{wareCode},</if>
+            <if test="wareName != null">ware_name = #{wareName},</if>
+            <if test="agvType != null">agv_type = #{agvType},</if>
+            <if test="agvCount != null">agv_count = #{agvCount},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="version != null">version = #{version},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteAgvZoneById" parameterType="Long">
+        delete from agv_zone where id = #{id}
+    </delete>
+
+    <delete id="deleteAgvZoneByIds" parameterType="String">
+        delete from agv_zone where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

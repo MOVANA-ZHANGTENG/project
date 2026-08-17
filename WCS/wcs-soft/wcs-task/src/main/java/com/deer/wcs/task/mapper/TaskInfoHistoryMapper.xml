@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.task.dao.TaskInfoHistoryMapper">
+    
+    <resultMap type="com.deer.wcs.task.model.TaskInfoHistory" id="TaskInfoHistoryResult">
+        <result property="id"    column="id"    />
+        <result property="taskNo"    column="task_no"    />
+        <result property="wmsTaskNo"    column="wms_task_no"    />
+        <result property="wareCode"    column="ware_code"    />
+        <result property="wareName"    column="ware_name"    />
+        <result property="areaCode"    column="area_code"    />
+        <result property="areaName"    column="area_name"    />
+        <result property="type"    column="type"    />
+        <result property="palletCode"    column="pallet_code"    />
+        <result property="fromCellCode"    column="from_cell_code"    />
+        <result property="toCellCode"    column="to_cell_code"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="finishTime"    column="finish_time"    />
+        <result property="state"    column="state"    />
+        <result property="version"    column="version"    />
+        <result property="memo"    column="memo"    />
+        <result property="palletType"    column="pallet_type"    />
+        <result property="palletHeight"    column="pallet_height"    />
+        <result property="palletWeight"    column="pallet_weight"    />
+        <result property="remark1"    column="remark1"    />
+        <result property="remark2"    column="remark2"    />
+        <result property="remark3"    column="remark3"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="TaskInfoHistoryResult"  type="com.deer.wcs.task.model.TaskInfoHistoryDto" >
+    </resultMap>
+
+    <sql id="selectTaskInfoHistoryVo">
+        select id, task_no, wms_task_no, ware_code, ware_name, area_code, area_name, type, pallet_code, from_cell_code, to_cell_code, create_time, finish_time, state, version, memo, pallet_type, pallet_height, pallet_weight, remark1, remark2, remark3,priority from task_info_history
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.task.model.TaskInfoHistoryCriteria" resultMap="Dto">
+        <include refid="selectTaskInfoHistoryVo"/>
+        <where>  
+            <if test="taskNo != null  and taskNo != ''"> and task_no like concat('%'+#{taskNo}+'%')</if>
+            <if test="id != null"> and id = #{id}</if>
+            <if test="wmsTaskNo != null  and wmsTaskNo != ''"> and wms_task_no = #{wmsTaskNo}</if>
+            <if test="wareCode != null  and wareCode != ''"> and ware_code = #{wareCode}</if>
+            <if test="wareName != null  and wareName != ''"> and ware_name like concat('%', #{wareName}, '%')</if>
+            <if test="areaCode != null  and areaCode != ''"> and area_code = #{areaCode}</if>
+            <if test="areaName != null  and areaName != ''"> and area_name like concat('%', #{areaName}, '%')</if>
+            <if test="type != null  and type != ''"> and type = #{type}</if>
+            <if test="palletCode != null  and palletCode != ''"> and pallet_code = #{palletCode}</if>
+            <if test="fromCellCode != null  and fromCellCode != ''"> and from_cell_code = #{fromCellCode}</if>
+            <if test="toCellCode != null  and toCellCode != ''"> and to_cell_code = #{toCellCode}</if>
+            <if test="state != null "> and state = #{state}</if>
+            <if test="palletType != null  and palletType != ''"> and pallet_type = #{palletType}</if>
+            <if test="finishTime != null  and finishTime != ''"> and finish_time like concat(#{finishTime},'%')</if>
+            <if test="params.createTimeStart != null and params.createTimeStart != ''"> and create_time &gt;= #{params.createTimeStart}</if>
+            <if test="params.createTimeEnd != null and params.createTimeEnd != ''"> and create_time &lt;= #{params.createTimeEnd}</if>
+            <if test="params.finishTimeStart != null and params.finishTimeStart != ''"> and finish_time &gt;= #{params.finishTimeStart}</if>
+            <if test="params.finishTimeEnd != null and params.finishTimeEnd != ''"> and finish_time &lt;= #{params.finishTimeEnd}</if>
+        </where>
+        order by id desc
+    </select>
+    
+    <select id="selectTaskInfoHistoryById" parameterType="Long" resultMap="TaskInfoHistoryResult">
+        <include refid="selectTaskInfoHistoryVo"/>
+        where id = #{id}
+    </select>
+    <select id="findByTimeAllTask" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM task_info_history
+        <where>
+            <!-- 白班：当天08:00-20:00（逻辑不变） -->
+            <if test='classTime == "1"'>
+                create_time BETWEEN CONCAT(CURDATE(), ' 08:00:00') AND CONCAT(CURDATE(), ' 20:00:00')
+            </if>
+
+            <!-- 夜班：动态适配凌晨/非凌晨查询，确保跨天范围正确 -->
+            <if test='classTime == "2"'>
+                <!-- 用当前时间判断：是否处于凌晨00:00-08:00 -->
+                <choose>
+                    <!-- 情况1：当前时间在00:00-08:00（凌晨查询）→ 查前一天20:00到当天08:00 -->
+                    <when test="currentHour &lt; 8">
+                        (
+                        create_time >= CONCAT(DATE_SUB(CURDATE(), INTERVAL 1 DAY), ' 20:00:00')
+                        AND create_time &lt;= CONCAT(CURDATE(), ' 08:00:00')
+                        )
+                    </when>
+                    <!-- 情况2：当前时间在08:00-24:00 → 查当天20:00到次日08:00 -->
+                    <otherwise>
+                        (
+                        create_time >= CONCAT(CURDATE(), ' 20:00:00')
+                        AND create_time &lt;= CONCAT(DATE_ADD(CURDATE(), INTERVAL 1 DAY), ' 08:00:00')
+                        )
+                    </otherwise>
+                </choose>
+            </if>
+            and type = 9
+            and remark1 = 1
+        </where>
+
+    </select>
+
+    <select id="findByTimeAllTask2" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM task_info_history
+        WHERE
+        type = 9
+        and remark1 = 1
+        <!-- 处理 XML 语法冲突 + 非空判断 -->
+        <if test="beginTime != null and endTime != null and beginTime &lt;= endTime">
+            and create_time BETWEEN
+            CONCAT(#{beginTime}, ' 00:00:00')
+            AND
+            CONCAT(#{endTime}, ' 23:59:59')
+        </if>
+
+    </select>
+
+    <insert id="insertTaskInfoHistory" parameterType="com.deer.wcs.task.model.TaskInfoHistory" useGeneratedKeys="true" keyProperty="id">
+        insert into task_info_history
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="taskNo != null and taskNo != ''">task_no,</if>
+            <if test="wmsTaskNo != null">wms_task_no,</if>
+            <if test="wareCode != null">ware_code,</if>
+            <if test="wareName != null">ware_name,</if>
+            <if test="areaCode != null">area_code,</if>
+            <if test="areaName != null">area_name,</if>
+            <if test="type != null and type != ''">type,</if>
+            <if test="palletCode != null and palletCode != ''">pallet_code,</if>
+            <if test="fromCellCode != null">from_cell_code,</if>
+            <if test="toCellCode != null">to_cell_code,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="finishTime != null">finish_time,</if>
+            <if test="state != null">state,</if>
+            <if test="version != null">version,</if>
+            <if test="memo != null">memo,</if>
+            <if test="palletType != null">pallet_type,</if>
+            <if test="palletHeight != null">pallet_height,</if>
+            <if test="palletWeight != null">pallet_weight,</if>
+            <if test="remark1 != null">remark1,</if>
+            <if test="remark2 != null">remark2,</if>
+            <if test="remark3 != null">remark3,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="taskNo != null and taskNo != ''">#{taskNo},</if>
+            <if test="wmsTaskNo != null">#{wmsTaskNo},</if>
+            <if test="wareCode != null">#{wareCode},</if>
+            <if test="wareName != null">#{wareName},</if>
+            <if test="areaCode != null">#{areaCode},</if>
+            <if test="areaName != null">#{areaName},</if>
+            <if test="type != null and type != ''">#{type},</if>
+            <if test="palletCode != null and palletCode != ''">#{palletCode},</if>
+            <if test="fromCellCode != null">#{fromCellCode},</if>
+            <if test="toCellCode != null">#{toCellCode},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="finishTime != null">#{finishTime},</if>
+            <if test="state != null">#{state},</if>
+            <if test="version != null">#{version},</if>
+            <if test="memo != null">#{memo},</if>
+            <if test="palletType != null">#{palletType},</if>
+            <if test="palletHeight != null">#{palletHeight},</if>
+            <if test="palletWeight != null">#{palletWeight},</if>
+            <if test="remark1 != null">#{remark1},</if>
+            <if test="remark2 != null">#{remark2},</if>
+            <if test="remark3 != null">#{remark3},</if>
+         </trim>
+    </insert>
+
+    <update id="updateTaskInfoHistory" parameterType="com.deer.wcs.task.model.TaskInfoHistory">
+        update task_info_history
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="taskNo != null and taskNo != ''">task_no = #{taskNo},</if>
+            <if test="wmsTaskNo != null">wms_task_no = #{wmsTaskNo},</if>
+            <if test="wareCode != null">ware_code = #{wareCode},</if>
+            <if test="wareName != null">ware_name = #{wareName},</if>
+            <if test="areaCode != null">area_code = #{areaCode},</if>
+            <if test="areaName != null">area_name = #{areaName},</if>
+            <if test="type != null and type != ''">type = #{type},</if>
+            <if test="palletCode != null and palletCode != ''">pallet_code = #{palletCode},</if>
+            <if test="fromCellCode != null">from_cell_code = #{fromCellCode},</if>
+            <if test="toCellCode != null">to_cell_code = #{toCellCode},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="finishTime != null">finish_time = #{finishTime},</if>
+            <if test="state != null">state = #{state},</if>
+            <if test="version != null">version = #{version},</if>
+            <if test="memo != null">memo = #{memo},</if>
+            <if test="palletType != null">pallet_type = #{palletType},</if>
+            <if test="palletHeight != null">pallet_height = #{palletHeight},</if>
+            <if test="palletWeight != null">pallet_weight = #{palletWeight},</if>
+            <if test="remark1 != null">remark1 = #{remark1},</if>
+            <if test="remark2 != null">remark2 = #{remark2},</if>
+            <if test="remark3 != null">remark3 = #{remark3},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteTaskInfoHistoryById" parameterType="Long">
+        delete from task_info_history where id = #{id}
+    </delete>
+
+    <delete id="deleteTaskInfoHistoryByIds" parameterType="String">
+        delete from task_info_history where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

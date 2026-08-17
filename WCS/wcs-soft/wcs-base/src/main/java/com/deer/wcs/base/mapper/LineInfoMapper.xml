@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.base.dao.LineInfoMapper">
+    
+    <resultMap type="com.deer.wcs.base.model.LineInfo" id="LineInfoResult">
+        <result property="id"    column="id"    />
+        <result property="code"    column="code"    />
+        <result property="name"    column="name"    />
+        <result property="type"    column="type"    />
+        <result property="wareCode"    column="ware_code"    />
+        <result property="wareName"    column="ware_name"    />
+        <result property="areaCode"    column="area_code"    />
+        <result property="areaName"    column="area_name"    />
+        <result property="invenState"    column="inven_state"    />
+        <result property="taskState"    column="task_state"    />
+        <result property="disableState"    column="disable_state"    />
+        <result property="isDelete"    column="is_delete"    />
+        <result property="version"    column="version"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="createUserId"    column="create_user_id"    />
+        <result property="createUserName"    column="create_user_name"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="updateUserId"    column="update_user_id"    />
+        <result property="updateUserName"    column="update_user_name"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="LineInfoResult"  type="com.deer.wcs.base.model.LineInfoDto" >
+    </resultMap>
+
+    <sql id="selectLineInfoVo">
+        select * from line_info
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.base.model.LineInfoCriteria" resultMap="Dto">
+        <include refid="selectLineInfoVo"/>
+        <where>
+            <if test="code != null  and code != ''"> and code = #{code}</if>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="type != null  and type != ''"> and type = #{type}</if>
+            <if test="wareCode != null  and wareCode != ''"> and ware_code = #{wareCode}</if>
+            <if test="wareName != null  and wareName != ''"> and ware_name like concat('%', #{wareName}, '%')</if>
+            <if test="areaCode != null  and areaCode != ''"> and area_code = #{areaCode}</if>
+            <if test="areaName != null  and areaName != ''"> and area_name like concat('%', #{areaName}, '%')</if>
+            <if test="invenState != null "> and inven_state = #{invenState}</if>
+            <if test="taskState != null "> and task_state = #{taskState}</if>
+            <if test="disableState != null "> and disable_state = #{disableState}</if>
+            <if test="isDelete != null "> and is_delete = #{isDelete}</if>
+            <if test="version != null "> and version = #{version}</if>
+            <if test="createUserId != null "> and create_user_id = #{createUserId}</if>
+            <if test="createUserName != null  and createUserName != ''"> and create_user_name like concat('%', #{createUserName}, '%')</if>
+            <if test="updateUserId != null "> and update_user_id = #{updateUserId}</if>
+            <if test="updateUserName != null  and updateUserName != ''"> and update_user_name like concat('%', #{updateUserName}, '%')</if>
+            <if test="updateTime != null  and updateTime != ''"> and update_time like concat(#{updateTime},'%')</if>
+            <if test="createTime != null  and createTime != ''"> and create_time like concat(#{createTime},'%')</if>
+        </where>
+    </select>
+    
+    <select id="selectLineInfoById" parameterType="Long" resultMap="LineInfoResult">
+        <include refid="selectLineInfoVo"/>
+        where id = #{id}
+    </select>
+    <select id="allotLine"   resultMap="LineInfoResult">
+        SELECT
+        li.*,
+        COUNT(ci.id) AS empty_cell_count
+        FROM
+        cell_info ci
+        JOIN
+        line_info li ON ci.line_code = li.code
+        WHERE
+        ci.inven_state = 0 and ci.task_state=0 and ci.disable_state=0
+        and li.disable_state=0
+        and li.ware_code = #{wareCode}
+        GROUP BY
+        ci.line_code
+        ORDER BY
+        empty_cell_count DESC
+        LIMIT 1;
+    </select>
+        
+    <insert id="insertLineInfo" parameterType="com.deer.wcs.base.model.LineInfo">
+        insert into line_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="code != null">code,</if>
+            <if test="name != null">name,</if>
+            <if test="type != null">type,</if>
+            <if test="wareCode != null">ware_code,</if>
+            <if test="wareName != null">ware_name,</if>
+            <if test="areaCode != null">area_code,</if>
+            <if test="areaName != null">area_name,</if>
+            <if test="invenState != null">inven_state,</if>
+            <if test="taskState != null">task_state,</if>
+            <if test="disableState != null">disable_state,</if>
+            <if test="isDelete != null">is_delete,</if>
+            <if test="version != null">version,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="createUserId != null">create_user_id,</if>
+            <if test="createUserName != null">create_user_name,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="updateUserId != null">update_user_id,</if>
+            <if test="updateUserName != null">update_user_name,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="code != null">#{code},</if>
+            <if test="name != null">#{name},</if>
+            <if test="type != null">#{type},</if>
+            <if test="wareCode != null">#{wareCode},</if>
+            <if test="wareName != null">#{wareName},</if>
+            <if test="areaCode != null">#{areaCode},</if>
+            <if test="areaName != null">#{areaName},</if>
+            <if test="invenState != null">#{invenState},</if>
+            <if test="taskState != null">#{taskState},</if>
+            <if test="disableState != null">#{disableState},</if>
+            <if test="isDelete != null">#{isDelete},</if>
+            <if test="version != null">#{version},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="createUserId != null">#{createUserId},</if>
+            <if test="createUserName != null">#{createUserName},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="updateUserId != null">#{updateUserId},</if>
+            <if test="updateUserName != null">#{updateUserName},</if>
+         </trim>
+    </insert>
+
+    <update id="updateLineInfo" parameterType="com.deer.wcs.base.model.LineInfo">
+        update line_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="code != null">code = #{code},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="wareCode != null">ware_code = #{wareCode},</if>
+            <if test="wareName != null">ware_name = #{wareName},</if>
+            <if test="areaCode != null">area_code = #{areaCode},</if>
+            <if test="areaName != null">area_name = #{areaName},</if>
+            <if test="invenState != null">inven_state = #{invenState},</if>
+            <if test="taskState != null">task_state = #{taskState},</if>
+            <if test="disableState != null">disable_state = #{disableState},</if>
+            <if test="isDelete != null">is_delete = #{isDelete},</if>
+            <if test="version != null">version = #{version},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="createUserId != null">create_user_id = #{createUserId},</if>
+            <if test="createUserName != null">create_user_name = #{createUserName},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="updateUserId != null">update_user_id = #{updateUserId},</if>
+            <if test="updateUserName != null">update_user_name = #{updateUserName},</if>
+        </trim>
+        where id = #{id}
+    </update>
+    <update id="updateAllLinkLine" parameterType="wareInfoUpdate">
+        update cell_info set line_code = #{newLineCode} , line_name = #{newLineName} where line_code = #{oldLineCode};
+    </update>
+
+    <delete id="deleteLineInfoById" parameterType="Long">
+        delete from line_info where id = #{id}
+    </delete>
+
+    <delete id="deleteLineInfoByIds" parameterType="String">
+        delete from line_info where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

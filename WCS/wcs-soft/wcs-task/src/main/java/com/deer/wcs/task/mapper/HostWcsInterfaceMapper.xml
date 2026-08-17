@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.task.dao.HostWcsInterfaceMapper">
+    
+    <resultMap type="com.deer.wcs.task.model.HostWcsInterface" id="HostWcsInterfaceResult">
+        <result property="id"    column="id"    />
+        <result property="code"    column="code"    />
+        <result property="sendFrom"    column="send_from"    />
+        <result property="sendTo"    column="send_to"    />
+        <result property="startTime"    column="start_time"    />
+        <result property="endTime"    column="end_time"    />
+        <result property="content"    column="content"    />
+        <result property="recv"    column="recv"    />
+        <result property="sendCount"    column="send_count"    />
+        <result property="sendStatus"    column="send_status"    />
+        <result property="sendResult"    column="send_result"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="HostWcsInterfaceResult"  type="com.deer.wcs.task.model.HostWcsInterfaceDto" >
+    </resultMap>
+
+    <sql id="selectHostWcsInterfaceVo">
+        select * from host_wcs_interface
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.task.model.HostWcsInterfaceCriteria" resultMap="Dto">
+        <include refid="selectHostWcsInterfaceVo"/>
+        <where>  
+            <if test="code != null  and code != ''"> and code = #{code}</if>
+            <if test="interfaceName != null  and interfaceName != ''"> and interfaceName like concat('%',#{code},'%')</if>
+            <if test="url != null  and url != ''"> and url like concat('%',#{url},'%')</if>
+            <if test="sendFrom != null  and sendFrom != ''"> and send_from = #{sendFrom}</if>
+            <if test="sendTo != null  and sendTo != ''"> and send_to = #{sendTo}</if>
+            <if test="startTime != null  and startTime != ''"> and start_time like concat(#{startTime},'%')</if>
+            <if test="endTime != null  and endTime != ''"> and end_time like concat(#{endTime},'%')</if>
+            <if test="content != null  and content != ''"> and content like concat(#{content},'%')</if>
+            <if test="recv != null  and recv != ''"> and recv = #{recv}</if>
+            <if test="sendCount != null "> and send_count = #{sendCount}</if>
+            <if test="sendStatus != null "> and send_status = #{sendStatus}</if>
+            <if test="sendResult != null "> and send_result = #{sendResult}</if>
+        </where>
+        order by id desc
+    </select>
+    
+    <select id="selectHostWcsInterfaceById" parameterType="Long" resultMap="HostWcsInterfaceResult">
+        <include refid="selectHostWcsInterfaceVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertHostWcsInterface" parameterType="com.deer.wcs.task.model.HostWcsInterface" useGeneratedKeys="true" keyProperty="id">
+        insert into host_wcs_interface
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="code != null and code != ''">code,</if>
+            <if test="sendFrom != null and sendFrom != ''">send_from,</if>
+            <if test="sendTo != null and sendTo != ''">send_to,</if>
+            <if test="startTime != null">start_time,</if>
+            <if test="endTime != null">end_time,</if>
+            <if test="content != null">content,</if>
+            <if test="recv != null">recv,</if>
+            <if test="sendCount != null">send_count,</if>
+            <if test="sendStatus != null">send_status,</if>
+            <if test="sendResult != null">send_result,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="code != null and code != ''">#{code},</if>
+            <if test="sendFrom != null and sendFrom != ''">#{sendFrom},</if>
+            <if test="sendTo != null and sendTo != ''">#{sendTo},</if>
+            <if test="startTime != null">#{startTime},</if>
+            <if test="endTime != null">#{endTime},</if>
+            <if test="content != null">#{content},</if>
+            <if test="recv != null">#{recv},</if>
+            <if test="sendCount != null">#{sendCount},</if>
+            <if test="sendStatus != null">#{sendStatus},</if>
+            <if test="sendResult != null">#{sendResult},</if>
+         </trim>
+    </insert>
+
+    <update id="updateHostWcsInterface" parameterType="com.deer.wcs.task.model.HostWcsInterface">
+        update host_wcs_interface
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="code != null and code != ''">code = #{code},</if>
+            <if test="sendFrom != null and sendFrom != ''">send_from = #{sendFrom},</if>
+            <if test="sendTo != null and sendTo != ''">send_to = #{sendTo},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="recv != null">recv = #{recv},</if>
+            <if test="sendCount != null">send_count = #{sendCount},</if>
+            <if test="sendStatus != null">send_status = #{sendStatus},</if>
+            <if test="sendResult != null">send_result = #{sendResult},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteHostWcsInterfaceById" parameterType="Long">
+        delete from host_wcs_interface where id = #{id}
+    </delete>
+
+    <delete id="deleteHostWcsInterfaceByIds" parameterType="String">
+        delete from host_wcs_interface where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

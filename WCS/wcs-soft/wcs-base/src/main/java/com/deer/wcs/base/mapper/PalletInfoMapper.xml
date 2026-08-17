@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.base.dao.PalletInfoMapper">
+    
+    <resultMap type="com.deer.wcs.base.model.PalletInfo" id="PalletInfoResult">
+        <result property="id"    column="id"    />
+        <result property="code"    column="code"    />
+        <result property="name"    column="name"    />
+        <result property="cellCode"    column="cell_code"    />
+        <result property="typeCode"    column="type_code"    />
+        <result property="typeName"    column="type_name"    />
+        <result property="isEmpty"    column="is_empty"    />
+        <result property="parentCode"    column="parent_code"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="PalletInfoResult"  type="com.deer.wcs.base.model.PalletInfoDto" >
+    </resultMap>
+
+    <sql id="selectPalletInfoVo">
+        select * from pallet_info
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.base.model.PalletInfoCriteria" resultMap="Dto">
+        select pallet_info.*
+        ,ware_info.name as ware_name
+        from  pallet_info  pallet_info
+
+        left join ware_info ware_info on pallet_info.ware_code = ware_info.code
+        <where>  
+            <if test="code != null  and code != ''"> and pallet_info.code = #{code}</if>
+            <if test="rfidCode != null  and rfidCode != ''"> and pallet_info.rfid_code = #{rfidCode}</if>
+            <if test="name != null  and name != ''"> and pallet_info.name like concat('%', #{name}, '%')</if>
+            <if test="cellCode != null  and cellCode != ''"> and pallet_info.cell_code = #{cellCode}</if>
+            <if test="typeCode != null  and typeCode != ''"> and pallet_info.type_code = #{typeCode}</if>
+            <if test="typeName != null  and typeName != ''"> and pallet_info.type_name like concat('%', #{typeName}, '%')</if>
+            <if test="isEmpty != null  and isEmpty != ''"> and pallet_info.is_empty = #{isEmpty}</if>
+            <if test="state != null  and state != ''"> and pallet_info.state = #{state}</if>
+            <if test="parentCode != null  and parentCode != ''"> and pallet_info.parent_code = #{parentCode}</if>
+        </where>
+    </select>
+    
+    <select id="selectPalletInfoById" parameterType="Long" resultMap="PalletInfoResult">
+        <include refid="selectPalletInfoVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="getAEmptyPallet"   resultMap="PalletInfoResult">
+        select * from
+        pallet_info pallet_info
+        inner join cell_info cell_info on pallet_info.cell_code = cell_info.code and  pallet_info.ware_code = cell_info.ware_code
+        left join    bag_master bag_master on bag_master.pallet_code = pallet_info.code
+        where cell_info.inven_state=1
+        and cell_info.task_state=0
+        and cell_info.disable_state=0
+        and cell_info.ware_code = #{wareCode}
+        and bag_master.pallet_code IS NULL
+        limit 1
+    </select>
+
+    <select id="getAEmptyPalletByLineCode"   resultMap="PalletInfoResult">
+        select * from
+        pallet_info pallet_info
+        inner join cell_info cell_info on pallet_info.cell_code = cell_info.code and  pallet_info.ware_code = cell_info.ware_code
+        left join    bag_master bag_master on bag_master.pallet_code = pallet_info.code
+        where cell_info.inven_state=1
+        and cell_info.task_state=0
+        and cell_info.disable_state=0
+        and cell_info.ware_code = #{wareCode}
+        and cell_info.line_code = #{lineCode}
+        and bag_master.pallet_code IS NULL
+        limit 1
+    </select>
+    <select id="findByCode" resultType="com.deer.wcs.base.model.PalletInfo">
+        select * from pallet_info where code = #{palletCode}
+    </select>
+
+    <insert id="insertPalletInfo" parameterType="com.deer.wcs.base.model.PalletInfo" useGeneratedKeys="true" keyProperty="id">
+        insert into pallet_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="code != null and code != ''">code,</if>
+            <if test="name != null and name != ''">name,</if>
+            <if test="cellCode != null">cell_code,</if>
+            <if test="typeCode != null">type_code,</if>
+            <if test="typeName != null">type_name,</if>
+            <if test="isEmpty != null and isEmpty != ''">is_empty,</if>
+            <if test="parentCode != null">parent_code,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="code != null and code != ''">#{code},</if>
+            <if test="name != null and name != ''">#{name},</if>
+            <if test="cellCode != null">#{cellCode},</if>
+            <if test="typeCode != null">#{typeCode},</if>
+            <if test="typeName != null">#{typeName},</if>
+            <if test="isEmpty != null and isEmpty != ''">#{isEmpty},</if>
+            <if test="parentCode != null">#{parentCode},</if>
+         </trim>
+    </insert>
+
+    <update id="updatePalletInfo" parameterType="com.deer.wcs.base.model.PalletInfo">
+        update pallet_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="code != null and code != ''">code = #{code},</if>
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="cellCode != null">cell_code = #{cellCode},</if>
+            <if test="typeCode != null">type_code = #{typeCode},</if>
+            <if test="typeName != null">type_name = #{typeName},</if>
+            <if test="isEmpty != null and isEmpty != ''">is_empty = #{isEmpty},</if>
+            <if test="parentCode != null">parent_code = #{parentCode},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deletePalletInfoById" parameterType="Long">
+        delete from pallet_info where id = #{id}
+    </delete>
+
+    <delete id="deletePalletInfoByIds" parameterType="String">
+        delete from pallet_info where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

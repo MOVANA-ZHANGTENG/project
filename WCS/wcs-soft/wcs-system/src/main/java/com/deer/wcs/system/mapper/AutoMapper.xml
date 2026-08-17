@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.system.dao.AutoMapper">
+    
+    <resultMap type="com.deer.wcs.system.model.Auto" id="AutoResult">
+        <result property="id"    column="id"    />
+        <result property="type"    column="type"    />
+        <result property="date"    column="date"    />
+        <result property="no"    column="no"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="AutoResult"  type="com.deer.wcs.system.model.AutoDto" >
+    </resultMap>
+
+    <sql id="selectAutoVo">
+        select id, type, date, no from auto
+    </sql>
+    <select id="getByDateAndType" resultMap="AutoResult">
+        select * from auto where date = #{date} and type = #{type}
+        order by id desc
+        limit  1
+    </select>
+
+    <delete id="deleteLast" >
+        delete from auto where type = #{type} and id &lt; #{thisId}
+    </delete>
+
+
+    <select id="findList" parameterType="com.deer.wcs.system.model.AutoCriteria" resultMap="Dto">
+        <include refid="selectAutoVo"/>
+        <where>  
+            <if test="id != null "> and id = #{id}</if>
+            <if test="type != null "> and type = #{type}</if>
+            <if test="date != null  and date != ''"> and date = #{date}</if>
+            <if test="no != null "> and no = #{no}</if>
+        </where>
+    </select>
+    
+    <select id="selectAutoById" parameterType="Integer" resultMap="AutoResult">
+        <include refid="selectAutoVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertAuto" parameterType="com.deer.wcs.system.model.Auto" useGeneratedKeys="true" keyProperty="id">
+        insert into auto
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="type != null">type,</if>
+            <if test="date != null">date,</if>
+            <if test="no != null">no,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="type != null">#{type},</if>
+            <if test="date != null">#{date},</if>
+            <if test="no != null">#{no},</if>
+         </trim>
+    </insert>
+
+    <update id="updateAuto" parameterType="com.deer.wcs.system.model.Auto">
+        update auto
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="type != null">type = #{type},</if>
+            <if test="date != null">date = #{date},</if>
+            <if test="no != null">no = #{no},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteAutoById" parameterType="Integer">
+        delete from auto where id = #{id}
+    </delete>
+
+    <delete id="deleteAutoByIds" parameterType="String">
+        delete from auto where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

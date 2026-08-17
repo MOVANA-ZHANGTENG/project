@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.rcs.dao.RcsCarHandleMapper">
+    
+    <resultMap type="com.deer.wcs.rcs.model.RcsCarHandle" id="RcsCarHandleResult">
+        <result property="id"    column="id"    />
+        <result property="carTypeId"    column="car_type_id"    />
+        <result property="handleId"    column="handle_id"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="RcsCarHandleResult"  type="com.deer.wcs.rcs.model.RcsCarHandleDto" >
+    </resultMap>
+
+    <sql id="selectRcsCarHandleVo">
+        select id, car_type_id, handle_id, create_time from rcs_car_handle
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.rcs.model.RcsCarHandleCriteria" resultMap="Dto">
+        <include refid="selectRcsCarHandleVo"/>
+        <where>  
+            <if test="carTypeId != null "> and car_type_id = #{carTypeId}</if>
+            <if test="handleId != null "> and handle_id = #{handleId}</if>
+        </where>
+    </select>
+    
+    <select id="selectRcsCarHandleById" parameterType="Long" resultMap="RcsCarHandleResult">
+        <include refid="selectRcsCarHandleVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertRcsCarHandle" parameterType="com.deer.wcs.rcs.model.RcsCarHandle">
+        insert into rcs_car_handle
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="carTypeId != null">car_type_id,</if>
+            <if test="handleId != null">handle_id,</if>
+            <if test="createTime != null">create_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="carTypeId != null">#{carTypeId},</if>
+            <if test="handleId != null">#{handleId},</if>
+            <if test="createTime != null">#{createTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateRcsCarHandle" parameterType="com.deer.wcs.rcs.model.RcsCarHandle">
+        update rcs_car_handle
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="carTypeId != null">car_type_id = #{carTypeId},</if>
+            <if test="handleId != null">handle_id = #{handleId},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteRcsCarHandleById" parameterType="Long">
+        delete from rcs_car_handle where id = #{id}
+    </delete>
+
+    <delete id="deleteRcsCarHandleByIds" parameterType="String">
+        delete from rcs_car_handle where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

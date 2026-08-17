@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.base.dao.InCellTacicsMapper">
+    
+    <resultMap type="com.deer.wcs.base.model.InCellTacics" id="InCellTacicsResult">
+        <result property="id"    column="id"    />
+        <result property="code"    column="code"    />
+        <result property="name"    column="name"    />
+        <result property="isAbc"    column="is_abc"    />
+        <result property="lineBalanceType"    column="line_balance_type"    />
+        <result property="xType"    column="x_type"    />
+        <result property="yType"    column="y_type"    />
+        <result property="zType"    column="z_type"    />
+        <result property="isSys"    column="is_sys"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="InCellTacicsResult"  type="com.deer.wcs.base.model.InCellTacicsDto" >
+    </resultMap>
+
+    <sql id="selectInCellTacicsVo">
+        select id, code, name, is_abc, line_balance_type, x_type, y_type, z_type, is_sys from in_cell_tacics
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.base.model.InCellTacicsCriteria" resultMap="Dto">
+        <include refid="selectInCellTacicsVo"/>
+        <where>  
+            <if test="code != null  and code != ''"> and code = #{code}</if>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="isAbc != null  and isAbc != ''"> and is_abc = #{isAbc}</if>
+            <if test="lineBalanceType != null "> and line_balance_type = #{lineBalanceType}</if>
+            <if test="xType != null  and xType != ''"> and x_type = #{xType}</if>
+            <if test="yType != null  and yType != ''"> and y_type = #{yType}</if>
+            <if test="zType != null  and zType != ''"> and z_type = #{zType}</if>
+            <if test="isSys != null "> and is_sys = #{isSys}</if>
+        </where>
+    </select>
+    
+    <select id="selectInCellTacicsById" parameterType="Long" resultMap="InCellTacicsResult">
+        <include refid="selectInCellTacicsVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertInCellTacics" parameterType="com.deer.wcs.base.model.InCellTacics">
+        insert into in_cell_tacics
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="code != null">code,</if>
+            <if test="name != null">name,</if>
+            <if test="isAbc != null">is_abc,</if>
+            <if test="lineBalanceType != null">line_balance_type,</if>
+            <if test="xType != null">x_type,</if>
+            <if test="yType != null">y_type,</if>
+            <if test="zType != null">z_type,</if>
+            <if test="isSys != null">is_sys,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="code != null">#{code},</if>
+            <if test="name != null">#{name},</if>
+            <if test="isAbc != null">#{isAbc},</if>
+            <if test="lineBalanceType != null">#{lineBalanceType},</if>
+            <if test="xType != null">#{xType},</if>
+            <if test="yType != null">#{yType},</if>
+            <if test="zType != null">#{zType},</if>
+            <if test="isSys != null">#{isSys},</if>
+         </trim>
+    </insert>
+
+    <update id="updateInCellTacics" parameterType="com.deer.wcs.base.model.InCellTacics">
+        update in_cell_tacics
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="code != null">code = #{code},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="isAbc != null">is_abc = #{isAbc},</if>
+            <if test="lineBalanceType != null">line_balance_type = #{lineBalanceType},</if>
+            <if test="xType != null">x_type = #{xType},</if>
+            <if test="yType != null">y_type = #{yType},</if>
+            <if test="zType != null">z_type = #{zType},</if>
+            <if test="isSys != null">is_sys = #{isSys},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteInCellTacicsById" parameterType="Long">
+        delete from in_cell_tacics where id = #{id}
+    </delete>
+
+    <delete id="deleteInCellTacicsByIds" parameterType="String">
+        delete from in_cell_tacics where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

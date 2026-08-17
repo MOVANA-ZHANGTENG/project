@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.rcs.dao.RcsChargPileInfoMapper">
+    
+    <resultMap type="com.deer.wcs.rcs.model.RcsChargPileInfo" id="RcsChargPileInfoResult">
+        <result property="id"    column="id"    />
+        <result property="code"    column="code"    />
+        <result property="cellId"    column="cell_id"    />
+        <result property="wareCode"    column="ware_code"    />
+        <result property="rcsCarTypeId"    column="rcs_car_type_id"    />
+        <result property="carId"    column="car_id"    />
+        <result property="disableState"    column="disable_state"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="RcsChargPileInfoResult"  type="com.deer.wcs.rcs.model.RcsChargPileInfoDto" >
+    </resultMap>
+
+    <sql id="selectRcsChargPileInfoVo">
+        select id, code, cell_id, ware_code, rcs_car_type_id, car_id, disable_state from rcs_charg_pile_info
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.rcs.model.RcsChargPileInfoCriteria" resultMap="Dto">
+        <include refid="selectRcsChargPileInfoVo"/>
+        <where>  
+            <if test="code != null  and code != ''"> and code = #{code}</if>
+            <if test="cellId != null "> and cell_id = #{cellId}</if>
+            <if test="wareCode != null  and wareCode != ''"> and ware_code = #{wareCode}</if>
+            <if test="rcsCarTypeId != null "> and rcs_car_type_id = #{rcsCarTypeId}</if>
+            <if test="carId != null "> and car_id = #{carId}</if>
+            <if test="disableState != null "> and disable_state = #{disableState}</if>
+        </where>
+    </select>
+    
+    <select id="selectRcsChargPileInfoById" parameterType="Integer" resultMap="RcsChargPileInfoResult">
+        <include refid="selectRcsChargPileInfoVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertRcsChargPileInfo" parameterType="com.deer.wcs.rcs.model.RcsChargPileInfo">
+        insert into rcs_charg_pile_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="code != null">code,</if>
+            <if test="cellId != null">cell_id,</if>
+            <if test="wareCode != null">ware_code,</if>
+            <if test="rcsCarTypeId != null">rcs_car_type_id,</if>
+            <if test="carId != null">car_id,</if>
+            <if test="disableState != null">disable_state,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="code != null">#{code},</if>
+            <if test="cellId != null">#{cellId},</if>
+            <if test="wareCode != null">#{wareCode},</if>
+            <if test="rcsCarTypeId != null">#{rcsCarTypeId},</if>
+            <if test="carId != null">#{carId},</if>
+            <if test="disableState != null">#{disableState},</if>
+         </trim>
+    </insert>
+
+    <update id="updateRcsChargPileInfo" parameterType="com.deer.wcs.rcs.model.RcsChargPileInfo">
+        update rcs_charg_pile_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="code != null">code = #{code},</if>
+            <if test="cellId != null">cell_id = #{cellId},</if>
+            <if test="wareCode != null">ware_code = #{wareCode},</if>
+            <if test="rcsCarTypeId != null">rcs_car_type_id = #{rcsCarTypeId},</if>
+            <if test="carId != null">car_id = #{carId},</if>
+            <if test="disableState != null">disable_state = #{disableState},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteRcsChargPileInfoById" parameterType="Integer">
+        delete from rcs_charg_pile_info where id = #{id}
+    </delete>
+
+    <delete id="deleteRcsChargPileInfoByIds" parameterType="String">
+        delete from rcs_charg_pile_info where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

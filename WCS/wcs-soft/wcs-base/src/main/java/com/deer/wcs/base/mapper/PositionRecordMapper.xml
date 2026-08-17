@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.base.dao.PositionRecordMapper">
+    
+    <resultMap type="com.deer.wcs.base.model.PositionRecord" id="PositionRecordResult">
+        <result property="id"    column="id"    />
+        <result property="positionId"    column="position_id"    />
+        <result property="content"    column="content"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="type"    column="type"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="PositionRecordResult"  type="com.deer.wcs.base.model.PositionRecordDto" >
+        <result property="positionCode"    column="position_code"    />
+        <result property="wareCode"    column="ware_code"    />
+        <result property="wareName"    column="ware_name"    />
+    </resultMap>
+
+    <sql id="selectPositionRecordVo">
+        select * from position_record
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.base.model.PositionRecordCriteria" resultMap="Dto">
+        SELECT 
+            pr.*,
+            pi.code as position_code,
+            pi.ware_code as ware_code,
+            pi.ware_name as ware_name
+        FROM position_record pr
+        LEFT JOIN position_info pi ON pr.position_id = pi.id
+        <where>  
+            <if test="positionId != null "> and pr.position_id = #{positionId}</if>
+            <if test="content != null  and content != ''"> and pr.content = #{content}</if>
+            <if test="type != null "> and pr.type = #{type}</if>
+            <if test="wareCode != null and wareCode != ''"> and pi.ware_code = #{wareCode}</if>
+            <if test="positionCode != null and positionCode != ''"> and pi.code = #{positionCode}</if>
+        </where>
+        order by pr.id desc
+    </select>
+    
+    <select id="selectPositionRecordById" parameterType="Long" resultMap="PositionRecordResult">
+        <include refid="selectPositionRecordVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertPositionRecord" parameterType="com.deer.wcs.base.model.PositionRecord">
+        insert into position_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="positionId != null">position_id,</if>
+            <if test="content != null">content,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="type != null">type,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="positionId != null">#{positionId},</if>
+            <if test="content != null">#{content},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="type != null">#{type},</if>
+         </trim>
+    </insert>
+
+    <update id="updatePositionRecord" parameterType="com.deer.wcs.base.model.PositionRecord">
+        update position_record
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="positionId != null">position_id = #{positionId},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="type != null">type = #{type},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deletePositionRecordById" parameterType="Long">
+        delete from position_record where id = #{id}
+    </delete>
+
+    <delete id="deletePositionRecordByIds" parameterType="String">
+        delete from position_record where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

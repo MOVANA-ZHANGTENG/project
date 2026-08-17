@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.rcs.dao.RcsCarTypeMapper">
+    
+    <resultMap type="com.deer.wcs.rcs.model.RcsCarType" id="RcsCarTypeResult">
+        <result property="id"    column="id"    />
+        <result property="brand"    column="brand"    />
+        <result property="model"    column="model"    />
+        <result property="maxSpeed"    column="max_speed"    />
+        <result property="loadCapacity"    column="load_capacity"    />
+        <result property="minChargeLevel"    column="min_charge_level"    />
+        <result property="freeChargeLevel"    column="free_charge_level"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="createUserId"    column="create_user_id"    />
+        <result property="createUserName"    column="create_user_name"    />
+        <result property="updateUserId"    column="update_user_id"    />
+        <result property="updateUserName"    column="update_user_name"    />
+        <result property="updateTime"    column="update_time"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="RcsCarTypeResult"  type="com.deer.wcs.rcs.model.RcsCarTypeDto" >
+    </resultMap>
+
+    <sql id="selectRcsCarTypeVo">
+        select id, brand, model, max_speed, load_capacity, min_charge_level, free_charge_level, create_time, create_user_id, create_user_name, update_user_id, update_user_name, update_time from rcs_car_type
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.rcs.model.RcsCarTypeCriteria" resultMap="Dto">
+        <include refid="selectRcsCarTypeVo"/>
+        <where>  
+            <if test="brand != null  and brand != ''"> and brand = #{brand}</if>
+            <if test="model != null  and model != ''"> and model = #{model}</if>
+            <if test="maxSpeed != null "> and max_speed = #{maxSpeed}</if>
+            <if test="loadCapacity != null "> and load_capacity = #{loadCapacity}</if>
+            <if test="minChargeLevel != null "> and min_charge_level = #{minChargeLevel}</if>
+            <if test="freeChargeLevel != null "> and free_charge_level = #{freeChargeLevel}</if>
+            <if test="createUserId != null "> and create_user_id = #{createUserId}</if>
+            <if test="createUserName != null  and createUserName != ''"> and create_user_name like concat('%', #{createUserName}, '%')</if>
+            <if test="updateUserId != null "> and update_user_id = #{updateUserId}</if>
+            <if test="updateUserName != null  and updateUserName != ''"> and update_user_name like concat('%', #{updateUserName}, '%')</if>
+        </where>
+    </select>
+    
+    <select id="selectRcsCarTypeById" parameterType="Long" resultMap="RcsCarTypeResult">
+        <include refid="selectRcsCarTypeVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertRcsCarType" parameterType="com.deer.wcs.rcs.model.RcsCarType">
+        insert into rcs_car_type
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="brand != null">brand,</if>
+            <if test="model != null">model,</if>
+            <if test="maxSpeed != null">max_speed,</if>
+            <if test="loadCapacity != null">load_capacity,</if>
+            <if test="minChargeLevel != null">min_charge_level,</if>
+            <if test="freeChargeLevel != null">free_charge_level,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="createUserId != null">create_user_id,</if>
+            <if test="createUserName != null">create_user_name,</if>
+            <if test="updateUserId != null">update_user_id,</if>
+            <if test="updateUserName != null">update_user_name,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="brand != null">#{brand},</if>
+            <if test="model != null">#{model},</if>
+            <if test="maxSpeed != null">#{maxSpeed},</if>
+            <if test="loadCapacity != null">#{loadCapacity},</if>
+            <if test="minChargeLevel != null">#{minChargeLevel},</if>
+            <if test="freeChargeLevel != null">#{freeChargeLevel},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="createUserId != null">#{createUserId},</if>
+            <if test="createUserName != null">#{createUserName},</if>
+            <if test="updateUserId != null">#{updateUserId},</if>
+            <if test="updateUserName != null">#{updateUserName},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateRcsCarType" parameterType="com.deer.wcs.rcs.model.RcsCarType">
+        update rcs_car_type
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="brand != null">brand = #{brand},</if>
+            <if test="model != null">model = #{model},</if>
+            <if test="maxSpeed != null">max_speed = #{maxSpeed},</if>
+            <if test="loadCapacity != null">load_capacity = #{loadCapacity},</if>
+            <if test="minChargeLevel != null">min_charge_level = #{minChargeLevel},</if>
+            <if test="freeChargeLevel != null">free_charge_level = #{freeChargeLevel},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="createUserId != null">create_user_id = #{createUserId},</if>
+            <if test="createUserName != null">create_user_name = #{createUserName},</if>
+            <if test="updateUserId != null">update_user_id = #{updateUserId},</if>
+            <if test="updateUserName != null">update_user_name = #{updateUserName},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteRcsCarTypeById" parameterType="Long">
+        delete from rcs_car_type where id = #{id}
+    </delete>
+
+    <delete id="deleteRcsCarTypeByIds" parameterType="String">
+        delete from rcs_car_type where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

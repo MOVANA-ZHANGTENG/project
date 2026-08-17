@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.base.dao.PositionHandleMapper">
+    
+    <resultMap type="com.deer.wcs.base.model.PositionHandle" id="PositionHandleResult">
+        <result property="id"    column="id"    />
+        <result property="stepCode"    column="step_code"    />
+        <result property="handleId"    column="handle_id"    />
+        <result property="type"    column="type"    />
+        <result property="className"    column="class_name"    />
+        <result property="methodName"    column="method_name"    />
+        <result property="code"    column="code"    />
+        <result property="name"    column="name"    />
+        <result property="orderNo"    column="order_no"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="createUserId"    column="create_user_id"    />
+        <result property="createUserName"    column="create_user_name"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="updateUserId"    column="update_user_id"    />
+        <result property="updateUserName"    column="update_user_name"    />
+        <result property="isDelete"    column="is_delete"    />
+        <result property="version"    column="version"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="PositionHandleResult"  type="com.deer.wcs.base.model.PositionHandleDto" >
+    </resultMap>
+
+    <sql id="selectPositionHandleVo">
+        select id, step_code, handle_id, type, class_name, method_name, code, name, order_no, create_time, create_user_id, create_user_name, update_time, update_user_id, update_user_name, is_delete, version from position_handle
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.base.model.PositionHandleCriteria" resultMap="Dto">
+        <include refid="selectPositionHandleVo"/>
+        <where>  
+            <if test="positionConditionId != null "> and position_condition_id = #{positionConditionId}</if>
+            <if test="handleId != null "> and handle_id = #{handleId}</if>
+            <if test="type != null "> and type = #{type}</if>
+            <if test="className != null  and className != ''"> and class_name like concat('%', #{className}, '%')</if>
+            <if test="methodName != null  and methodName != ''"> and method_name like concat('%', #{methodName}, '%')</if>
+            <if test="code != null  and code != ''"> and code = #{code}</if>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="index != null "> and index = #{index}</if>
+            <if test="createUserId != null "> and create_user_id = #{createUserId}</if>
+            <if test="createUserName != null  and createUserName != ''"> and create_user_name like concat('%', #{createUserName}, '%')</if>
+            <if test="updateUserId != null "> and update_user_id = #{updateUserId}</if>
+            <if test="updateUserName != null  and updateUserName != ''"> and update_user_name like concat('%', #{updateUserName}, '%')</if>
+            <if test="isDelete != null "> and is_delete = #{isDelete}</if>
+            <if test="version != null "> and version = #{version}</if>
+        </where>
+    </select>
+    
+    <select id="selectPositionHandleById" parameterType="Long" resultMap="PositionHandleResult">
+        <include refid="selectPositionHandleVo"/>
+        where id = #{id}
+    </select>
+
+
+    <insert id="insertPositionHandle" parameterType="com.deer.wcs.base.model.PositionHandle">
+        insert into position_handle
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="step_code != null">step_code,</if>
+            <if test="handleId != null">handle_id,</if>
+            <if test="type != null">type,</if>
+            <if test="className != null">class_name,</if>
+            <if test="methodName != null">method_name,</if>
+            <if test="code != null">code,</if>
+            <if test="name != null">name,</if>
+            <if test="index != null">index,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="createUserId != null">create_user_id,</if>
+            <if test="createUserName != null">create_user_name,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="updateUserId != null">update_user_id,</if>
+            <if test="updateUserName != null">update_user_name,</if>
+            <if test="isDelete != null">is_delete,</if>
+            <if test="version != null">version,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="positionConditionId != null">#{stepCode},</if>
+            <if test="handleId != null">#{handleId},</if>
+            <if test="type != null">#{type},</if>
+            <if test="className != null">#{className},</if>
+            <if test="methodName != null">#{methodName},</if>
+            <if test="code != null">#{code},</if>
+            <if test="name != null">#{name},</if>
+            <if test="index != null">#{index},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="createUserId != null">#{createUserId},</if>
+            <if test="createUserName != null">#{createUserName},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="updateUserId != null">#{updateUserId},</if>
+            <if test="updateUserName != null">#{updateUserName},</if>
+            <if test="isDelete != null">#{isDelete},</if>
+            <if test="version != null">#{version},</if>
+         </trim>
+    </insert>
+
+    <update id="updatePositionHandle" parameterType="com.deer.wcs.base.model.PositionHandle">
+        update position_handle
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="positionConditionId != null">position_condition_id = #{positionConditionId},</if>
+            <if test="handleId != null">handle_id = #{handleId},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="className != null">class_name = #{className},</if>
+            <if test="methodName != null">method_name = #{methodName},</if>
+            <if test="code != null">code = #{code},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="index != null">index = #{index},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="createUserId != null">create_user_id = #{createUserId},</if>
+            <if test="createUserName != null">create_user_name = #{createUserName},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="updateUserId != null">update_user_id = #{updateUserId},</if>
+            <if test="updateUserName != null">update_user_name = #{updateUserName},</if>
+            <if test="isDelete != null">is_delete = #{isDelete},</if>
+            <if test="version != null">version = #{version},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deletePositionHandleById" parameterType="Long">
+        delete from position_handle where id = #{id}
+    </delete>
+
+    <delete id="deletePositionHandleByIds" parameterType="String">
+        delete from position_handle where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <delete id="deleteByStepCode">
+        delete from position_handle where step_code = #{code}
+    </delete>
+</mapper>

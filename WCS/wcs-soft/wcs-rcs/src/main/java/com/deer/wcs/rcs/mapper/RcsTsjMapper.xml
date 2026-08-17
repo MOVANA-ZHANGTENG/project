@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.rcs.dao.RcsTsjMapper">
+    
+    <resultMap type="com.deer.wcs.rcs.model.RcsTsj" id="RcsTsjResult">
+        <result property="id"    column="id"    />
+        <result property="code"    column="code"    />
+        <result property="name"    column="name"    />
+        <result property="model"    column="model"    />
+        <result property="wareCode"    column="ware_code"    />
+        <result property="wareName"    column="ware_name"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="status"    column="status"    />
+        <result property="currentFloor"    column="current_floor"    />
+        <result property="targetFloor"    column="target_floor"    />
+        <result property="moveDirection"    column="move_direction"    />
+        <result property="loadStatus"    column="load_status"    />
+        <result property="realTimeSpeed"    column="real_time_speed"    />
+        <result property="totalOperationTime"    column="total_operation_time"    />
+        <result property="currentTaskId"    column="current_task_id"    />
+        <result property="taskQueue"    column="task_queue"    />
+        <result property="taskType"    column="task_type"    />
+        <result property="taskStartTime"    column="task_start_time"    />
+        <result property="taskEndTime"    column="task_end_time"    />
+        <result property="carId"    column="car_id"    />
+        <result property="ratedLoadCapacity"    column="rated_load_capacity"    />
+        <result property="interiorDimensions"    column="interior_dimensions"    />
+        <result property="motorPower"    column="motor_power"    />
+        <result property="chargingInterfaceType"    column="charging_interface_type"    />
+        <result property="chargingPower"    column="charging_power"    />
+        <result property="communicationProtocol"    column="communication_protocol"    />
+        <result property="positioningAccuracy"    column="positioning_accuracy"    />
+        <result property="errorCode"    column="error_code"    />
+        <result property="alarmType"    column="alarm_type"    />
+        <result property="errorMessage"    column="error_message"    />
+        <result property="authorizedFloorRange"    column="authorized_floor_range"    />
+        <result property="deviceCode"    column="device_code"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="RcsTsjResult"  type="com.deer.wcs.rcs.model.RcsTsjDto" >
+    </resultMap>
+
+    <sql id="selectRcsTsjVo">
+        select * from rcs_tsj
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.rcs.model.RcsTsjCriteria" resultMap="Dto">
+        <include refid="selectRcsTsjVo"/>
+        <where>  
+            <if test="code != null  and code != ''"> and code = #{code}</if>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="model != null  and model != ''"> and model = #{model}</if>
+            <if test="wareCode != null  and wareCode != ''"> and ware_code = #{wareCode}</if>
+            <if test="wareName != null  and wareName != ''"> and ware_name like concat('%', #{wareName}, '%')</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="currentFloor != null "> and current_floor = #{currentFloor}</if>
+            <if test="targetFloor != null "> and target_floor = #{targetFloor}</if>
+            <if test="moveDirection != null  and moveDirection != ''"> and move_direction = #{moveDirection}</if>
+            <if test="loadStatus != null "> and load_status = #{loadStatus}</if>
+            <if test="realTimeSpeed != null "> and real_time_speed = #{realTimeSpeed}</if>
+            <if test="totalOperationTime != null "> and total_operation_time = #{totalOperationTime}</if>
+            <if test="currentTaskId != null "> and current_task_id = #{currentTaskId}</if>
+            <if test="taskQueue != null  and taskQueue != ''"> and task_queue = #{taskQueue}</if>
+            <if test="taskType != null  and taskType != ''"> and task_type = #{taskType}</if>
+            <if test="taskStartTime != null  and taskStartTime != ''"> and task_start_time = #{taskStartTime}</if>
+            <if test="taskEndTime != null  and taskEndTime != ''"> and task_end_time = #{taskEndTime}</if>
+            <if test="carId != null "> and car_id = #{carId}</if>
+            <if test="ratedLoadCapacity != null "> and rated_load_capacity = #{ratedLoadCapacity}</if>
+            <if test="interiorDimensions != null  and interiorDimensions != ''"> and interior_dimensions = #{interiorDimensions}</if>
+            <if test="motorPower != null "> and motor_power = #{motorPower}</if>
+            <if test="chargingInterfaceType != null  and chargingInterfaceType != ''"> and charging_interface_type = #{chargingInterfaceType}</if>
+            <if test="chargingPower != null  and chargingPower != ''"> and charging_power = #{chargingPower}</if>
+            <if test="communicationProtocol != null  and communicationProtocol != ''"> and communication_protocol = #{communicationProtocol}</if>
+            <if test="positioningAccuracy != null "> and positioning_accuracy = #{positioningAccuracy}</if>
+            <if test="errorCode != null  and errorCode != ''"> and error_code = #{errorCode}</if>
+            <if test="alarmType != null  and alarmType != ''"> and alarm_type = #{alarmType}</if>
+            <if test="errorMessage != null  and errorMessage != ''"> and error_message = #{errorMessage}</if>
+            <if test="authorizedFloorRange != null  and authorizedFloorRange != ''"> and authorized_floor_range = #{authorizedFloorRange}</if>
+            <if test="deviceCode != null  and deviceCode != ''"> and device_code = #{deviceCode}</if>
+        </where>
+    </select>
+    
+    <select id="selectRcsTsjById" parameterType="Long" resultMap="RcsTsjResult">
+        <include refid="selectRcsTsjVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertRcsTsj" parameterType="com.deer.wcs.rcs.model.RcsTsj" useGeneratedKeys="true" keyProperty="id">
+        insert into rcs_tsj
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="code != null">code,</if>
+            <if test="name != null">name,</if>
+            <if test="model != null">model,</if>
+            <if test="wareCode != null">ware_code,</if>
+            <if test="wareName != null">ware_name,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="status != null">status,</if>
+            <if test="currentFloor != null">current_floor,</if>
+            <if test="targetFloor != null">target_floor,</if>
+            <if test="moveDirection != null">move_direction,</if>
+            <if test="loadStatus != null">load_status,</if>
+            <if test="realTimeSpeed != null">real_time_speed,</if>
+            <if test="totalOperationTime != null">total_operation_time,</if>
+            <if test="currentTaskId != null">current_task_id,</if>
+            <if test="taskQueue != null">task_queue,</if>
+            <if test="taskType != null">task_type,</if>
+            <if test="taskStartTime != null">task_start_time,</if>
+            <if test="taskEndTime != null">task_end_time,</if>
+            <if test="carId != null">car_id,</if>
+            <if test="ratedLoadCapacity != null">rated_load_capacity,</if>
+            <if test="interiorDimensions != null">interior_dimensions,</if>
+            <if test="motorPower != null">motor_power,</if>
+            <if test="chargingInterfaceType != null">charging_interface_type,</if>
+            <if test="chargingPower != null">charging_power,</if>
+            <if test="communicationProtocol != null">communication_protocol,</if>
+            <if test="positioningAccuracy != null">positioning_accuracy,</if>
+            <if test="errorCode != null">error_code,</if>
+            <if test="alarmType != null">alarm_type,</if>
+            <if test="errorMessage != null">error_message,</if>
+            <if test="authorizedFloorRange != null">authorized_floor_range,</if>
+            <if test="deviceCode != null">device_code,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="code != null">#{code},</if>
+            <if test="name != null">#{name},</if>
+            <if test="model != null">#{model},</if>
+
+            <if test="wareCode != null">#{wareCode},</if>
+            <if test="wareName != null">#{wareName},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="status != null">#{status},</if>
+            <if test="currentFloor != null">#{currentFloor},</if>
+            <if test="targetFloor != null">#{targetFloor},</if>
+            <if test="moveDirection != null">#{moveDirection},</if>
+            <if test="loadStatus != null">#{loadStatus},</if>
+            <if test="realTimeSpeed != null">#{realTimeSpeed},</if>
+            <if test="totalOperationTime != null">#{totalOperationTime},</if>
+            <if test="currentTaskId != null">#{currentTaskId},</if>
+            <if test="taskQueue != null">#{taskQueue},</if>
+            <if test="taskType != null">#{taskType},</if>
+            <if test="taskStartTime != null">#{taskStartTime},</if>
+            <if test="taskEndTime != null">#{taskEndTime},</if>
+            <if test="carId != null">#{carId},</if>
+            <if test="ratedLoadCapacity != null">#{ratedLoadCapacity},</if>
+            <if test="interiorDimensions != null">#{interiorDimensions},</if>
+            <if test="motorPower != null">#{motorPower},</if>
+            <if test="chargingInterfaceType != null">#{chargingInterfaceType},</if>
+            <if test="chargingPower != null">#{chargingPower},</if>
+            <if test="communicationProtocol != null">#{communicationProtocol},</if>
+            <if test="positioningAccuracy != null">#{positioningAccuracy},</if>
+            <if test="errorCode != null">#{errorCode},</if>
+            <if test="alarmType != null">#{alarmType},</if>
+            <if test="errorMessage != null">#{errorMessage},</if>
+            <if test="authorizedFloorRange != null">#{authorizedFloorRange},</if>
+            <if test="deviceCode != null">#{deviceCode},</if>
+         </trim>
+    </insert>
+
+    <update id="updateRcsTsj" parameterType="com.deer.wcs.rcs.model.RcsTsj">
+        update rcs_tsj
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="code != null">code = #{code},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="model != null">model = #{model},</if>
+
+            <if test="wareCode != null">ware_code = #{wareCode},</if>
+            <if test="wareName != null">ware_name = #{wareName},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="currentFloor != null">current_floor = #{currentFloor},</if>
+            <if test="targetFloor != null">target_floor = #{targetFloor},</if>
+            <if test="moveDirection != null">move_direction = #{moveDirection},</if>
+            <if test="loadStatus != null">load_status = #{loadStatus},</if>
+            <if test="realTimeSpeed != null">real_time_speed = #{realTimeSpeed},</if>
+            <if test="totalOperationTime != null">total_operation_time = #{totalOperationTime},</if>
+            <if test="currentTaskId != null">current_task_id = #{currentTaskId},</if>
+            <if test="taskQueue != null">task_queue = #{taskQueue},</if>
+            <if test="taskType != null">task_type = #{taskType},</if>
+            <if test="taskStartTime != null">task_start_time = #{taskStartTime},</if>
+            <if test="taskEndTime != null">task_end_time = #{taskEndTime},</if>
+            <if test="carId != null">car_id = #{carId},</if>
+            <if test="ratedLoadCapacity != null">rated_load_capacity = #{ratedLoadCapacity},</if>
+            <if test="interiorDimensions != null">interior_dimensions = #{interiorDimensions},</if>
+            <if test="motorPower != null">motor_power = #{motorPower},</if>
+            <if test="chargingInterfaceType != null">charging_interface_type = #{chargingInterfaceType},</if>
+            <if test="chargingPower != null">charging_power = #{chargingPower},</if>
+            <if test="communicationProtocol != null">communication_protocol = #{communicationProtocol},</if>
+            <if test="positioningAccuracy != null">positioning_accuracy = #{positioningAccuracy},</if>
+            <if test="errorCode != null">error_code = #{errorCode},</if>
+            <if test="alarmType != null">alarm_type = #{alarmType},</if>
+            <if test="errorMessage != null">error_message = #{errorMessage},</if>
+            <if test="authorizedFloorRange != null">authorized_floor_range = #{authorizedFloorRange},</if>
+            <if test="deviceCode != null">device_code = #{deviceCode},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteRcsTsjById" parameterType="Long">
+        delete from rcs_tsj where id = #{id}
+    </delete>
+
+    <delete id="deleteRcsTsjByIds" parameterType="String">
+        delete from rcs_tsj where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

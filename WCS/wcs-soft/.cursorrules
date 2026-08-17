@@ -1,0 +1,46 @@
+1. 项目采用若以前后端分离架构，该项目适用于WCS仓储项目，主要负责与设备的对接，向设备发送指令，并接收设备返回的数据。
+2. 项目采用SpringBoot框架，数据库采用MySQL，前端采用Vue.js，后端采用SpringBoot，数据库采用MySQL。
+3. 后端模板：
+# 一、项目基础信息
+项目类型：仓储WCS后端服务
+编程语言：Java 8
+框架：SpringBoot 2.5.15、SpringMVC、Mybatis-Plus
+数据库：MySQL 8.0
+中间件：Redis
+构建工具：Maven
+规范：阿里Java开发手册
+
+# 二、固定目录结构（必须严格遵守）
+src/main/java/com/deer/wcs/*/
+├── Web 接口层，只做参数接收与返回
+├── service    业务逻辑层，接口+实现类分离
+├── mapper     Dao层，数据库操作
+├── model     数据库实体
+├── util       全局工具类
+├── config     配置类
+├── common     统一返回体、全局异常、常量
+
+# 三、强制架构约定
+1. 严格三层架构，禁止跨层调用
+2. 所有接口统一使用Result<T>返回格式
+3. SQL全部写在Mapper.xml，禁止硬编码SQL
+4. 入参必须做非空、格式校验
+5. 新增接口必须先写接口文档注释
+
+4. 前端模板：
+## 技术栈
+Vue2 + Vite + TypeScript + Element Plus
+Node 16.20.2
+
+## 目录结构
+src
+├── api 接口请求
+├── views 页面
+├── components 公共组件
+├── hooks 组合式函数
+├── utils 工具方法
+
+## 编码要求
+1. 统一ESLint规范
+2. 组件使用setup语法糖
+3. 禁止var，仅用let/const

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.rcs.dao.RcsCarPathMapper">
+    
+    <resultMap type="com.deer.wcs.rcs.model.RcsCarPath" id="RcsCarPathResult">
+        <result property="id"    column="id"    />
+        <result property="rcsCarId"    column="rcs_car_id"    />
+        <result property="jobId"    column="job_id"    />
+        <result property="taskId"    column="task_id"    />
+        <result property="fromCellId"    column="from_cell_id"    />
+        <result property="fromCellCode"    column="from_cell_code"    />
+        <result property="toCellId"    column="to_cell_id"    />
+        <result property="toCellCode"    column="to_cell_code"    />
+        <result property="state"    column="state"    />
+        <result property="wareCode"    column="ware_code"    />
+        <result property="z"    column="z"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="RcsCarPathResult"  type="com.deer.wcs.rcs.model.RcsCarPathDto" >
+    </resultMap>
+
+    <sql id="selectRcsCarPathVo">
+        select id, rcs_car_id, job_id, task_id, from_cell_id, from_cell_code, to_cell_id, to_cell_code, state, ware_code, z from rcs_car_path
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.rcs.model.RcsCarPathCriteria" resultMap="Dto">
+        <include refid="selectRcsCarPathVo"/>
+        <where>  
+            <if test="rcsCarId != null "> and rcs_car_id = #{rcsCarId}</if>
+            <if test="jobId != null "> and job_id = #{jobId}</if>
+            <if test="taskId != null "> and task_id = #{taskId}</if>
+            <if test="fromCellId != null "> and from_cell_id = #{fromCellId}</if>
+            <if test="toCellId != null "> and to_cell_id = #{toCellId}</if>
+            <if test="state != null "> and state = #{state}</if>
+        </where>
+    </select>
+    
+    <select id="selectRcsCarPathById" parameterType="Long" resultMap="RcsCarPathResult">
+        <include refid="selectRcsCarPathVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertRcsCarPath" parameterType="com.deer.wcs.rcs.model.RcsCarPath">
+        insert into rcs_car_path
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="rcsCarId != null">rcs_car_id,</if>
+            <if test="jobId != null">job_id,</if>
+            <if test="taskId != null">task_id,</if>
+            <if test="fromCellId != null">from_cell_id,</if>
+            <if test="toCellId != null">to_cell_id,</if>
+            <if test="state != null">state,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="rcsCarId != null">#{rcsCarId},</if>
+            <if test="jobId != null">#{jobId},</if>
+            <if test="taskId != null">#{taskId},</if>
+            <if test="fromCellId != null">#{fromCellId},</if>
+            <if test="toCellId != null">#{toCellId},</if>
+            <if test="state != null">#{state},</if>
+         </trim>
+    </insert>
+
+    <update id="updateRcsCarPath" parameterType="com.deer.wcs.rcs.model.RcsCarPath">
+        update rcs_car_path
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="rcsCarId != null">rcs_car_id = #{rcsCarId},</if>
+            <if test="jobId != null">job_id = #{jobId},</if>
+            <if test="taskId != null">task_id = #{taskId},</if>
+            <if test="fromCellId != null">from_cell_id = #{fromCellId},</if>
+            <if test="fromCellCode != null">from_cell_code = #{fromCellCode},</if>
+            <if test="toCellId != null">to_cell_id = #{toCellId},</if>
+            <if test="toCellCode != null">to_cell_code = #{toCellCode},</if>
+            <if test="state != null">state = #{state},</if>
+            <if test="wareCode != null">ware_code = #{wareCode},</if>
+            <if test="z != null">z = #{z},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteRcsCarPathById" parameterType="Long">
+        delete from rcs_car_path where id = #{id}
+    </delete>
+
+    <delete id="deleteRcsCarPathByIds" parameterType="String">
+        delete from rcs_car_path where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    
+    <!-- 删除jobId不存在于job_info表中的路径记录 -->
+    <delete id="deleteOrphanedPaths">
+        DELETE FROM rcs_car_path
+        WHERE job_id IS NOT NULL
+        AND job_id NOT IN (SELECT id FROM job_info)
+    </delete>
+
+
+    <select id="hasAllot" parameterType="com.deer.wcs.rcs.model.RcsCarPath" resultType="com.deer.wcs.rcs.model.RcsCarPath">
+        select * from rcs_car_path
+        where
+        (
+        from_cell_id in (#{fromCellId},#{toCellId}) or to_cell_id in (#{fromCellId},#{toCellId})
+        )
+        and rcs_car_id  !=#{rcsCarId}
+        and state in (1,2)
+        ;
+    </select>
+
+</mapper>

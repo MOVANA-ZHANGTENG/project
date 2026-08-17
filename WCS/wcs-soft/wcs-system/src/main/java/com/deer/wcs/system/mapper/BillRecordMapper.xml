@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.system.dao.BillRecordMapper">
+    
+    <resultMap type="com.deer.wcs.system.model.BillRecord" id="BillRecordResult">
+        <result property="billRecordId"    column="bill_record_id"    />
+        <result property="billNo"    column="bill_no"    />
+        <result property="billType"    column="bill_type"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="createUserId"    column="create_user_id"    />
+        <result property="createUserName"    column="create_user_name"    />
+        <result property="content"    column="content"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="BillRecordResult"  type="com.deer.wcs.system.model.BillRecordDto" >
+    </resultMap>
+
+    <sql id="selectBillRecordVo">
+        select * from bill_record
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.system.model.BillRecordCriteria" resultMap="Dto">
+        <include refid="selectBillRecordVo"/>
+        <where>  
+            <if test="billNo != null "> and bill_no = #{billNo}</if>
+            <if test="billType != null  and billType != ''"> and bill_type = #{billType}</if>
+            <if test="createUserId != null "> and create_user_id = #{createUserId}</if>
+            <if test="createUserName != null  and createUserName != ''"> and create_user_name = '%' + #{createUserName} + '%'</if>
+            <if test="content != null  and content != ''"> and content = #{content}</if>
+            <if test="createTime != null  and createTime != ''"> and CONVERT(varchar(10),create_time,120) = #{createTime}</if>
+        </where>
+    </select>
+
+    <select id="findCount" parameterType="com.deer.wcs.system.model.BillRecordCriteria" resultMap="Dto">
+        SELECT  COUNT(*) count,bill_type,create_user_name,create_user_id,CONVERT(varchar(10),create_time,120) create_time,content
+        FROM bill_record
+        <where>
+            <if test="billNo != null "> and bill_no = #{billNo}</if>
+            <if test="billType != null  and billType != ''"> and bill_type = #{billType}</if>
+            <if test="createUserId != null "> and create_user_id = #{createUserId}</if>
+            <if test="createUserName != null  and createUserName != ''"> and create_user_name LIKE '%' + #{createUserName} + '%'</if>
+            <if test="createTime != null  and createTime != ''"> and CONVERT(varchar(10),create_time,120) = #{createTime}</if>
+            <if test="content != null  and content != ''"> and content = #{content}</if>
+        </where>
+        GROUP BY bill_type,create_user_name,create_user_id,CONVERT(varchar(10),create_time,120),content
+    </select>
+
+    <select id="findByBillNo"  resultMap="BillRecordResult" parameterType="java.lang.String">
+        select * from bill_record
+        where bill_no = #{billNo}
+        order by bill_record_id desc
+        limit 200
+    </select>
+    
+    <select id="selectBillRecordByBillRecordId" parameterType="Integer" resultMap="BillRecordResult">
+        <include refid="selectBillRecordVo"/>
+        where bill_record_id = #{billRecordId}
+    </select>
+        
+    <insert id="insertBillRecord" parameterType="com.deer.wcs.system.model.BillRecord" useGeneratedKeys="true" keyProperty="billRecordId">
+        insert into bill_record
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="billNo != null">bill_no,</if>
+            <if test="billType != null">bill_type,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="createUserId != null">create_user_id,</if>
+            <if test="createUserName != null">create_user_name,</if>
+            <if test="content != null">content,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="billNo != null">#{billNo},</if>
+            <if test="billType != null">#{billType},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="createUserId != null">#{createUserId},</if>
+            <if test="createUserName != null">#{createUserName},</if>
+            <if test="content != null">#{content},</if>
+         </trim>
+    </insert>
+
+    <update id="updateBillRecord" parameterType="com.deer.wcs.system.model.BillRecord">
+        update bill_record
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="billNo != null">bill_no = #{billNo},</if>
+            <if test="billType != null">bill_type = #{billType},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="createUserId != null">create_user_id = #{createUserId},</if>
+            <if test="createUserName != null">create_user_name = #{createUserName},</if>
+            <if test="content != null">content = #{content},</if>
+        </trim>
+        where bill_record_id = #{billRecordId}
+    </update>
+
+    <delete id="deleteBillRecordByBillRecordId" parameterType="Integer">
+        delete from bill_record where bill_record_id = #{billRecordId}
+    </delete>
+
+    <delete id="deleteBillRecordByBillRecordIds" parameterType="String">
+        delete from bill_record where bill_record_id in 
+        <foreach item="billRecordId" collection="array" open="(" separator="," close=")">
+            #{billRecordId}
+        </foreach>
+    </delete>
+</mapper>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.task.dao.JobInfoMapper">
+    
+    <resultMap type="com.deer.wcs.task.model.JobInfo" id="JobInfoResult">
+        <result property="id"    column="id"    />
+        <result property="taskId"    column="task_id"    />
+        <result property="taskNo"    column="task_no"    />
+        <result property="jobIndex"    column="job_index"    />
+        <result property="type"    column="type"    />
+        <result property="palletCode"    column="pallet_code"    />
+        <result property="fromCellCode"    column="from_cell_code"    />
+        <result property="toCellCode"    column="to_cell_code"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="state"    column="state"    />
+        <result property="cmdTime"    column="cmd_time"    />
+        <result property="finishTime"    column="finish_time"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="JobInfoResult"  type="com.deer.wcs.task.model.JobInfoDto" >
+    </resultMap>
+
+    <sql id="selectJobInfoVo">
+        select id,name,memo, task_id, task_no, job_index, type, pallet_code, from_cell_code, to_cell_code, create_time, state, cmd_time, finish_time from job_info
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.task.model.JobInfoCriteria" resultMap="Dto">
+        <include refid="selectJobInfoVo"/>
+        <where>  
+            <if test="taskId != null "> and task_id = #{taskId}</if>
+            <if test="taskNo != null  and taskNo != ''"> and task_no = #{taskNo}</if>
+            <if test="type != null  and type != ''"> and type = #{type}</if>
+            <if test="palletCode != null  and palletCode != ''"> and pallet_code = #{palletCode}</if>
+            <if test="fromCellCode != null  and fromCellCode != ''"> and from_cell_code = #{fromCellCode}</if>
+            <if test="toCellCode != null  and toCellCode != ''"> and to_cell_code = #{toCellCode}</if>
+            <if test="state != null  and state != ''"> and state = #{state}</if>
+            <if test="createTime != null  and createTime != ''"> and create_time like concat(#{createTime},'%')</if>
+            <if test="cmdTime != null  and cmdTime != ''"> and cmd_time like concat(#{cmdTime},'%')</if>
+            <if test="finishTime != null  and finishTime != ''"> and finish_time like concat(#{finishTime},'%')</if>
+        </where>
+    </select>
+    
+    <select id="selectJobInfoById" parameterType="Long" resultMap="JobInfoResult">
+        <include refid="selectJobInfoVo"/>
+        where id = #{id}
+    </select>
+    <select id="findInJobByLineCode"   resultMap="JobInfoResult">
+        select job_info.* from job_info job_info
+        INNER  join cell_info cell_info on job_info.to_cell_code  = cell_info.`code`
+        INNER  join line_info line_info on cell_info.line_code = line_info.`code`
+        where job_info.state=0
+        and line_info.`code` = #{lineCode}
+    </select>
+    <update id="updatePalletTask"  >
+        update pallet_task set task_no  =#{taskNo}
+        where cell_code = #{cellCode}
+    </update>
+
+    <select id="findJobListByTaskNo" resultType="com.deer.wcs.task.model.JobInfo">
+        <include refid="selectJobInfoVo"/>
+        where task_id = #{taskId} order by job_index
+    </select>
+
+    <select id="findJobHisListByTaskNo" resultType="com.deer.wcs.task.model.JobInfo">
+        select * from job_info_history
+        where task_id = #{taskId} order by job_index
+    </select>
+    <select id="findByIndex" resultType="com.deer.wcs.task.model.JobInfo">
+        select * from job_info
+        where task_id = #{taskId} and job_index = #{index}
+    </select>
+
+
+    <insert id="insertJobInfo" parameterType="com.deer.wcs.task.model.JobInfo">
+        insert into job_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="taskId != null">task_id,</if>
+            <if test="taskNo != null">task_no,</if>
+            <if test="jobIndex != null">job_index,</if>
+            <if test="type != null">type,</if>
+            <if test="palletCode != null">pallet_code,</if>
+            <if test="fromCellCode != null">from_cell_code,</if>
+            <if test="toCellCode != null">to_cell_code,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="state != null">state,</if>
+            <if test="cmdTime != null">cmd_time,</if>
+            <if test="finishTime != null">finish_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="taskId != null">#{taskId},</if>
+            <if test="taskNo != null">#{taskNo},</if>
+            <if test="jobIndex != null">#{jobIndex},</if>
+            <if test="type != null">#{type},</if>
+            <if test="palletCode != null">#{palletCode},</if>
+            <if test="fromCellCode != null">#{fromCellCode},</if>
+            <if test="toCellCode != null">#{toCellCode},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="state != null">#{state},</if>
+            <if test="cmdTime != null">#{cmdTime},</if>
+            <if test="finishTime != null">#{finishTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateJobInfo" parameterType="com.deer.wcs.task.model.JobInfo">
+        update job_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="taskId != null">task_id = #{taskId},</if>
+            <if test="taskNo != null">task_no = #{taskNo},</if>
+            <if test="jobIndex != null">job_index = #{jobIndex},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="palletCode != null">pallet_code = #{palletCode},</if>
+            <if test="fromCellCode != null">from_cell_code = #{fromCellCode},</if>
+            <if test="toCellCode != null">to_cell_code = #{toCellCode},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="state != null">state = #{state},</if>
+            <if test="cmdTime != null">cmd_time = #{cmdTime},</if>
+            <if test="finishTime != null">finish_time = #{finishTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteJobInfoById" parameterType="Long">
+        delete from job_info where id = #{id}
+    </delete>
+
+    <delete id="deleteJobInfoByIds" parameterType="String">
+        delete from job_info where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

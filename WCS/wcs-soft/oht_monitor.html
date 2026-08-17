@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OHT天车调度监控系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+            background: #0a0e27;
+            color: #fff;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 动态背景网格 */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes gridMove {
+            0% {
+                transform: translate(0, 0);
+            }
+            100% {
+                transform: translate(50px, 50px);
+            }
+        }
+
+        /* 粒子背景画布 */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            background: linear-gradient(180deg, rgba(10, 14, 39, 0.9) 0%, rgba(10, 14, 39, 0.7) 100%);
+            padding: 12px 20px;
+            text-align: center;
+            border-bottom: 1px solid transparent;
+            border-image: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.6), transparent) 1;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 -1px 0 rgba(0, 212, 255, 0.3);
+            backdrop-filter: blur(15px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.3), transparent);
+            animation: scanline 3s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 200%;
+            }
+        }
+
+        .header h1 {
+            font-size: 24px;
+            text-shadow: 0 0 5px rgba(0, 212, 255, 0.5);
+            letter-spacing: 2px;
+            font-weight: bold;
+            position: relative;
+            z-index: 1;
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            padding: 12px;
+            gap: 12px;
+            overflow: hidden;
+        }
+
+        .canvas-container {
+            flex: 1;
+            background: linear-gradient(135deg, rgba(10, 14, 39, 0.7) 0%, rgba(0, 20, 40, 0.5) 100%);
+            border-radius: 12px;
+            padding: 15px;
+            position: relative;
+            overflow: auto;
+            border: 1px solid rgba(0, 212, 255, 0.15);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px) saturate(180%);
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge */
+        }
+
+        .canvas-container::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+
+        #ohtCanvas {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 10, 20, 0.3) 100%);
+            border-radius: 8px;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+            border: none;
+        }
+
+        .info-panel {
+            width: 320px;
+            background: linear-gradient(180deg, rgba(10, 14, 39, 0.85) 0%, rgba(10, 14, 39, 0.75) 100%);
+            border-radius: 12px;
+            padding: 15px;
+            overflow-y: auto;
+            border: 1px solid rgba(0, 212, 255, 0.15);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px) saturate(180%);
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge */
+        }
+
+        .info-panel::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+
+        .info-panel h2 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: #00d4ff;
+            border-bottom: 1px solid transparent;
+            border-image: linear-gradient(90deg, rgba(0, 212, 255, 0.6), transparent) 1;
+            padding-bottom: 8px;
+            position: relative;
+        }
+
+        .info-panel h2::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            box-shadow: 0 0 10px #00d4ff;
+            animation: borderGrow 2s ease-in-out infinite;
+        }
+
+        @keyframes borderGrow {
+            0%, 100% {
+                width: 0;
+            }
+            50% {
+                width: 100%;
+            }
+        }
+
+        .oht-item {
+            background: linear-gradient(135deg, rgba(10, 20, 40, 0.7) 0%, rgba(0, 30, 50, 0.5) 100%);
+            padding: 0;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 4px 16px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            animation: slideInRight 0.5s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .oht-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.15), transparent);
+            transition: left 0.5s;
+        }
+
+        .oht-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #00d4ff 0%, #0088ff 100%);
+            transition: all 0.3s;
+        }
+
+        .oht-item:hover::before {
+            left: 100%;
+        }
+
+        .oht-item:hover {
+            transform: translateX(5px);
+            box-shadow: 
+                0 8px 32px rgba(0, 212, 255, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            border-color: rgba(0, 212, 255, 0.25);
+        }
+
+        .oht-item.running::after {
+            background: linear-gradient(180deg, #00ff88 0%, #00cc66 100%);
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .oht-item.idle::after {
+            background: linear-gradient(180deg, #ffaa00 0%, #ff8800 100%);
+            box-shadow: 0 0 10px rgba(255, 170, 0, 0.5);
+        }
+
+        .oht-item.error::after {
+            background: linear-gradient(180deg, #ff3333 0%, #cc0000 100%);
+            box-shadow: 0 0 10px rgba(255, 51, 51, 0.5);
+            animation: errorPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes errorPulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .oht-item-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px 8px 15px;
+            border-bottom: 1px solid transparent;
+            border-image: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.3), transparent) 1;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.1) 100%);
+            backdrop-filter: blur(5px);
+        }
+
+        .oht-item-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .oht-item-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.25) 0%, rgba(0, 150, 200, 0.15) 100%);
+            border: 1px solid rgba(0, 212, 255, 0.15);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(3px);
+        }
+
+        .oht-item.running .oht-item-icon {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: rgba(0, 255, 136, 0.4);
+            color: #00ff88;
+        }
+
+        .oht-item.idle .oht-item-icon {
+            background: rgba(255, 170, 0, 0.2);
+            border-color: rgba(255, 170, 0, 0.4);
+            color: #ffaa00;
+        }
+
+        .oht-item.error .oht-item-icon {
+            background: rgba(255, 51, 51, 0.2);
+            border-color: rgba(255, 51, 51, 0.4);
+            color: #ff3333;
+        }
+
+        .oht-item h3 {
+            font-size: 14px;
+            margin: 0;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .oht-item-body {
+            padding: 12px;
+        }
+
+        /* 关键指标区 */
+        .oht-metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 20, 40, 0.3) 100%);
+            border: 1px solid rgba(0, 212, 255, 0.08);
+            border-radius: 8px;
+            padding: 6px 8px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(5px);
+        }
+
+        .metric-card:hover {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.15) 0%, rgba(0, 100, 150, 0.1) 100%);
+            border-color: rgba(0, 212, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 4px 12px rgba(0, 212, 255, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .metric-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .metric-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            flex: 1;
+        }
+
+        .metric-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #00d4ff;
+            line-height: 1;
+        }
+
+        .metric-label {
+            font-size: 9px;
+            color: #999;
+            text-transform: uppercase;
+            line-height: 1;
+        }
+
+        /* 位置信息区 */
+        .oht-locations {
+            background: linear-gradient(90deg, rgba(0, 212, 255, 0.08) 0%, rgba(0, 0, 0, 0.2) 10%, rgba(0, 0, 0, 0.2) 100%);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-left: 2px solid transparent;
+            border-image: linear-gradient(180deg, rgba(0, 212, 255, 0.8), rgba(0, 212, 255, 0.2)) 1;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(5px);
+        }
+
+        .location-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+        }
+
+        .location-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 0;
+        }
+
+        .location-header {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .location-icon {
+            font-size: 12px;
+        }
+
+        .location-label {
+            font-size: 8px;
+            color: #00d4ff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .location-value {
+            font-size: 11px;
+            color: #fff;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-left: 16px;
+        }
+
+        .location-arrow {
+            font-size: 16px;
+            color: #00ff88;
+            flex-shrink: 0;
+            animation: arrowPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes arrowPulse {
+            0%, 100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            50% {
+                transform: translateX(3px);
+                opacity: 0.6;
+            }
+        }
+
+        /* 其他信息区 */
+        .oht-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .info-item {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.08) 0%, rgba(0, 100, 150, 0.05) 100%);
+            border: 1px solid rgba(0, 212, 255, 0.08);
+            border-radius: 8px;
+            padding: 6px 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+        }
+
+        .info-item:hover {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.12) 0%, rgba(0, 100, 150, 0.08) 100%);
+            border-color: rgba(0, 212, 255, 0.15);
+        }
+
+        .info-icon {
+            font-size: 14px;
+            min-width: 18px;
+        }
+
+        .info-content {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .info-label {
+            font-size: 9px;
+            color: #999;
+            margin-bottom: 1px;
+        }
+
+        .info-value {
+            font-size: 11px;
+            color: #fff;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .status-badge::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            animation: statusBlink 2s ease-in-out infinite;
+        }
+
+        @keyframes statusBlink {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .status-running {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 200, 100, 0.1));
+            color: #00ff88;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        .status-running::before {
+            background: #00ff88;
+            box-shadow: 0 0 6px rgba(0, 255, 136, 0.8);
+        }
+
+        .status-idle {
+            background: linear-gradient(135deg, rgba(255, 170, 0, 0.2), rgba(255, 150, 0, 0.1));
+            color: #ffaa00;
+            border: 1px solid rgba(255, 170, 0, 0.2);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        .status-idle::before {
+            background: #ffaa00;
+            box-shadow: 0 0 6px rgba(255, 170, 0, 0.8);
+        }
+
+        .status-error {
+            background: linear-gradient(135deg, rgba(255, 51, 51, 0.2), rgba(255, 30, 30, 0.1));
+            color: #ff3333;
+            border: 1px solid rgba(255, 51, 51, 0.2);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        .status-error::before {
+            background: #ff3333;
+            box-shadow: 0 0 6px rgba(255, 51, 51, 0.8);
+        }
+
+        /* 小车编号角标 */
+        .oht-item-id {
+            position: absolute;
+            top: -6px;
+            right: 12px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.85), rgba(0, 150, 255, 0.75));
+            color: #fff;
+            font-size: 9px;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 8px;
+            box-shadow: 
+                0 2px 8px rgba(0, 212, 255, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            z-index: 10;
+        }
+
+        .legend {
+            margin-top: 12px;
+            padding: 12px;
+            background: linear-gradient(135deg, rgba(0, 20, 40, 0.6) 0%, rgba(0, 30, 50, 0.4) 100%);
+            border-radius: 10px;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            box-shadow: 
+                0 4px 16px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+        }
+
+        .legend h3 {
+            font-size: 12px;
+            margin-bottom: 8px;
+            color: #00d4ff;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 11px;
+            transition: all 0.3s;
+            padding: 4px;
+            border-radius: 4px;
+        }
+
+        .legend-item:hover {
+            background: rgba(0, 212, 255, 0.1);
+            transform: translateX(3px);
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            border-radius: 3px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            padding: 0 12px;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, rgba(10, 20, 40, 0.8) 0%, rgba(0, 30, 50, 0.6) 100%);
+            padding: 0;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            box-shadow: 
+                0 4px 20px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(15px) saturate(150%);
+        }
+
+        .stat-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.8), transparent);
+            animation: topLineSlide 2s ease-in-out infinite;
+        }
+
+        @keyframes topLineSlide {
+            0%, 100% {
+                transform: translateX(-100%);
+            }
+            50% {
+                transform: translateX(100%);
+            }
+        }
+
+        .stat-box:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 
+                0 12px 40px rgba(0, 212, 255, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            border-color: rgba(0, 212, 255, 0.25);
+        }
+
+        .stat-box-inner {
+            padding: 15px 12px;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(0, 150, 200, 0.1) 100%);
+            border: 1px solid rgba(0, 212, 255, 0.15);
+            margin-bottom: 3px;
+            transition: all 0.3s;
+            box-shadow: 
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                0 2px 8px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        .stat-box:hover .stat-icon {
+            transform: rotateY(360deg);
+            background: rgba(0, 212, 255, 0.25);
+            border-color: rgba(0, 212, 255, 0.5);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #00d4ff;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+            position: relative;
+            line-height: 1;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #aaa;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .stat-trend {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 16px;
+            opacity: 0.3;
+        }
+
+        /* 不同状态的卡片样式 */
+        .stat-box.stat-total {
+            border-top: 3px solid #00d4ff;
+        }
+
+        .stat-box.stat-total .stat-icon {
+            background: rgba(0, 212, 255, 0.2);
+            border-color: rgba(0, 212, 255, 0.4);
+        }
+
+        .stat-box.stat-total .stat-value {
+            color: #00d4ff;
+        }
+
+        .stat-box.stat-running {
+            border-top: 3px solid #00ff88;
+        }
+
+        .stat-box.stat-running .stat-icon {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: rgba(0, 255, 136, 0.4);
+        }
+
+        .stat-box.stat-running .stat-value {
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .stat-box.stat-running::before {
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.8), transparent);
+        }
+
+        .stat-box.stat-idle {
+            border-top: 3px solid #ffaa00;
+        }
+
+        .stat-box.stat-idle .stat-icon {
+            background: rgba(255, 170, 0, 0.2);
+            border-color: rgba(255, 170, 0, 0.4);
+        }
+
+        .stat-box.stat-idle .stat-value {
+            color: #ffaa00;
+            text-shadow: 0 0 10px rgba(255, 170, 0, 0.5);
+        }
+
+        .stat-box.stat-idle::before {
+            background: linear-gradient(90deg, transparent, rgba(255, 170, 0, 0.8), transparent);
+        }
+
+        .stat-box.stat-error {
+            border-top: 3px solid #ff3333;
+        }
+
+        .stat-box.stat-error .stat-icon {
+            background: rgba(255, 51, 51, 0.2);
+            border-color: rgba(255, 51, 51, 0.4);
+        }
+
+        .stat-box.stat-error .stat-value {
+            color: #ff3333;
+            text-shadow: 0 0 10px rgba(255, 51, 51, 0.5);
+        }
+
+        .stat-box.stat-error::before {
+            background: linear-gradient(90deg, transparent, rgba(255, 51, 51, 0.8), transparent);
+        }
+
+        .stat-box.stat-error .stat-value {
+            animation: errorPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes errorPulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particles"></canvas>
+    <div class="container">
+        <div class="header">
+            <h1>🚡 OHT天车调度监控系统</h1>
+            <div style="position: absolute; top: 50%; right: 20px; transform: translateY(-50%); display: flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(0, 212, 255, 0.1); border: 1px solid rgba(0, 212, 255, 0.3); border-radius: 6px;">
+                <span style="font-size: 14px;">🕐</span>
+                <span id="currentTime" style="font-size: 11px; color: #00d4ff; font-weight: 500;"></span>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-box stat-total">
+                <div class="stat-box-inner">
+                    <div class="stat-icon">🚡</div>
+                    <div class="stat-value" id="totalOHT">0</div>
+                    <div class="stat-label">总设备数</div>
+                </div>
+                <div class="stat-trend">📊</div>
+            </div>
+            <div class="stat-box stat-running">
+                <div class="stat-box-inner">
+                    <div class="stat-icon">▶️</div>
+                    <div class="stat-value" id="runningOHT">0</div>
+                    <div class="stat-label">运行中</div>
+                </div>
+                <div class="stat-trend">⚡</div>
+            </div>
+            <div class="stat-box stat-idle">
+                <div class="stat-box-inner">
+                    <div class="stat-icon">⏸️</div>
+                    <div class="stat-value" id="idleOHT">0</div>
+                    <div class="stat-label">空闲中</div>
+                </div>
+                <div class="stat-trend">💤</div>
+            </div>
+            <div class="stat-box stat-error">
+                <div class="stat-box-inner">
+                    <div class="stat-icon">⚠️</div>
+                    <div class="stat-value" id="errorOHT">0</div>
+                    <div class="stat-label">故障数</div>
+                </div>
+                <div class="stat-trend">🔧</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="canvas-container">
+                <canvas id="ohtCanvas"></canvas>
+            </div>
+
+            <div class="info-panel">
+                <h2>📊 设备状态列表</h2>
+                <div id="ohtList"></div>
+
+                <div class="legend">
+                    <h3>图例说明</h3>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #666;"></div>
+                        <span>轨道路径</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #00d4ff;"></div>
+                        <span>站点/节点</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #00ff88;"></div>
+                        <span>OHT运行中</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ffaa00;"></div>
+                        <span>OHT空闲</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ff3333;"></div>
+                        <span>OHT故障</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============ 粒子背景系统 ============
+        const particleCanvas = document.getElementById('particles');
+        const particleCtx = particleCanvas.getContext('2d');
+        
+        particleCanvas.width = window.innerWidth;
+        particleCanvas.height = window.innerHeight;
+        
+        window.addEventListener('resize', () => {
+            particleCanvas.width = window.innerWidth;
+            particleCanvas.height = window.innerHeight;
+        });
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * particleCanvas.width;
+                this.y = Math.random() * particleCanvas.height;
+                this.size = Math.random() * 2 + 1;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+                this.opacity = Math.random() * 0.5 + 0.2;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+
+                if (this.x > particleCanvas.width) this.x = 0;
+                if (this.x < 0) this.x = particleCanvas.width;
+                if (this.y > particleCanvas.height) this.y = 0;
+                if (this.y < 0) this.y = particleCanvas.height;
+            }
+
+            draw() {
+                particleCtx.fillStyle = `rgba(0, 212, 255, ${this.opacity})`;
+                particleCtx.beginPath();
+                particleCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                particleCtx.fill();
+            }
+        }
+
+        const particles = [];
+        for (let i = 0; i < 100; i++) {
+            particles.push(new Particle());
+        }
+
+        function animateParticles() {
+            particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+            
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+                
+                // 连接附近的粒子
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < 120) {
+                        particleCtx.strokeStyle = `rgba(0, 212, 255, ${0.15 * (1 - distance / 120)})`;
+                        particleCtx.lineWidth = 0.5;
+                        particleCtx.beginPath();
+                        particleCtx.moveTo(particles[i].x, particles[i].y);
+                        particleCtx.lineTo(particles[j].x, particles[j].y);
+                        particleCtx.stroke();
+                    }
+                }
+            }
+            
+            requestAnimationFrame(animateParticles);
+        }
+
+        animateParticles();
+
+        // ============ OHT Canvas设置 ============
+        const canvas = document.getElementById('ohtCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 设置Canvas尺寸
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth - 40;
+            canvas.height = container.clientHeight - 40;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // 定义路径节点（网格布局）
+        const nodes = [];
+        const rows = 8;
+        const cols = 12;
+        const nodeSpacing = 80;
+        const offsetX = 50;
+        const offsetY = 50;
+
+        // 生成网格节点
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols; j++) {
+                nodes.push({
+                    id: `N${i}-${j}`,
+                    x: offsetX + j * nodeSpacing,
+                    y: offsetY + i * nodeSpacing,
+                    name: `站点${i * cols + j + 1}`
+                });
+            }
+        }
+
+        // 定义路径连接（创建网格轨道）
+        const paths = [];
+        // 横向连接
+        for (let i = 0; i < rows; i++) {
+            for (let j = 0; j < cols - 1; j++) {
+                paths.push({
+                    from: `N${i}-${j}`,
+                    to: `N${i}-${j + 1}`
+                });
+            }
+        }
+        // 纵向连接
+        for (let i = 0; i < rows - 1; i++) {
+            for (let j = 0; j < cols; j++) {
+                paths.push({
+                    from: `N${i}-${j}`,
+                    to: `N${i + 1}-${j}`
+                });
+            }
+        }
+
+        // OHT设备数据
+        const ohts = [
+            {
+                id: 'OHT-001',
+                name: '天车01号',
+                status: 'running',
+                currentNode: 'N0-0',
+                targetNode: 'N7-11',
+                speed: 1.5,
+                load: '托盘P-1234',
+                battery: 85,
+                pathIndex: 0,
+                route: []
+            },
+            {
+                id: 'OHT-002',
+                name: '天车02号',
+                status: 'running',
+                currentNode: 'N3-5',
+                targetNode: 'N0-8',
+                speed: 1.2,
+                load: '空载',
+                battery: 92,
+                pathIndex: 0,
+                route: []
+            },
+            {
+                id: 'OHT-003',
+                name: '天车03号',
+                status: 'idle',
+                currentNode: 'N7-11',
+                targetNode: null,
+                speed: 0,
+                load: '空载',
+                battery: 78,
+                pathIndex: 0,
+                route: []
+            },
+            {
+                id: 'OHT-004',
+                name: '天车04号',
+                status: 'running',
+                currentNode: 'N5-2',
+                targetNode: 'N2-9',
+                speed: 1.8,
+                load: '托盘P-5678',
+                battery: 65,
+                pathIndex: 0,
+                route: []
+            },
+            {
+                id: 'OHT-005',
+                name: '天车05号',
+                status: 'error',
+                currentNode: 'N1-6',
+                targetNode: null,
+                speed: 0,
+                load: '托盘P-9012',
+                battery: 45,
+                pathIndex: 0,
+                route: []
+            }
+        ];
+
+        // 为每个OHT生成随机路径
+        function generateRoute(fromNode, toNode) {
+            if (!toNode) return [];
+            
+            const from = nodes.find(n => n.id === fromNode);
+            const to = nodes.find(n => n.id === toNode);
+            
+            if (!from || !to) return [];
+
+            // 简单的路径规划（曼哈顿距离）
+            const route = [from];
+            let current = from;
+            
+            while (current.id !== to.id) {
+                const [curRow, curCol] = current.id.substring(1).split('-').map(Number);
+                const [targetRow, targetCol] = to.id.substring(1).split('-').map(Number);
+                
+                // 优先横向移动
+                if (curCol < targetCol) {
+                    current = nodes.find(n => n.id === `N${curRow}-${curCol + 1}`);
+                } else if (curCol > targetCol) {
+                    current = nodes.find(n => n.id === `N${curRow}-${curCol - 1}`);
+                } else if (curRow < targetRow) {
+                    current = nodes.find(n => n.id === `N${curRow + 1}-${curCol}`);
+                } else if (curRow > targetRow) {
+                    current = nodes.find(n => n.id === `N${curRow - 1}-${curCol}`);
+                }
+                
+                route.push(current);
+            }
+            
+            return route;
+        }
+
+        // 初始化路径
+        ohts.forEach(oht => {
+            oht.route = generateRoute(oht.currentNode, oht.targetNode);
+        });
+
+        // 获取节点位置
+        function getNodePosition(nodeId) {
+            return nodes.find(n => n.id === nodeId);
+        }
+
+        // 绘制轨道
+        function drawPaths() {
+            paths.forEach(path => {
+                const fromNode = getNodePosition(path.from);
+                const toNode = getNodePosition(path.to);
+                
+                if (fromNode && toNode) {
+                    // 绘制外层光晕
+                    ctx.strokeStyle = 'rgba(0, 212, 255, 0.1)';
+                    ctx.lineWidth = 8;
+                    ctx.beginPath();
+                    ctx.moveTo(fromNode.x, fromNode.y);
+                    ctx.lineTo(toNode.x, toNode.y);
+                    ctx.stroke();
+                    
+                    // 绘制主轨道
+                    ctx.strokeStyle = 'rgba(100, 100, 100, 0.6)';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(fromNode.x, fromNode.y);
+                    ctx.lineTo(toNode.x, toNode.y);
+                    ctx.stroke();
+                    
+                    // 绘制内层高光
+                    ctx.strokeStyle = 'rgba(150, 150, 150, 0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(fromNode.x, fromNode.y);
+                    ctx.lineTo(toNode.x, toNode.y);
+                    ctx.stroke();
+                }
+            });
+        }
+
+        // 绘制节点
+        function drawNodes() {
+            nodes.forEach((node, index) => {
+                // 绘制节点外层光晕
+                const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, 12);
+                gradient.addColorStop(0, 'rgba(0, 212, 255, 0.2)');
+                gradient.addColorStop(1, 'transparent');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 12, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 绘制节点主体
+                ctx.fillStyle = '#00d4ff';
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 绘制节点内圈
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 绘制节点标签（每隔几个显示）
+                if (index % 12 === 0) {
+                    ctx.fillStyle = '#00d4ff';
+                    ctx.font = 'bold 11px Arial';
+                    ctx.fillText(node.name, node.x + 10, node.y - 10);
+                }
+            });
+        }
+
+        // 绘制OHT
+        function drawOHT(oht) {
+            if (oht.route.length === 0) {
+                // 如果没有路径，绘制在当前节点
+                const node = getNodePosition(oht.currentNode);
+                if (!node) return;
+                
+                const colors = {
+                    running: '#00ff88',
+                    idle: '#ffaa00',
+                    error: '#ff3333'
+                };
+                
+                ctx.fillStyle = colors[oht.status] || '#fff';
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, 12, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 绘制边框
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // 绘制标签
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 11px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(oht.id.split('-')[1], node.x, node.y + 25);
+                
+                return;
+            }
+            
+            // 沿路径移动
+            if (oht.status === 'running') {
+                oht.pathIndex += oht.speed * 0.02;
+                
+                if (oht.pathIndex >= oht.route.length - 1) {
+                    // 到达目标，重新生成路径
+                    oht.currentNode = oht.targetNode;
+                    const randomNode = nodes[Math.floor(Math.random() * nodes.length)];
+                    oht.targetNode = randomNode.id;
+                    oht.route = generateRoute(oht.currentNode, oht.targetNode);
+                    oht.pathIndex = 0;
+                    oht.load = Math.random() > 0.5 ? `托盘P-${Math.floor(Math.random() * 10000)}` : '空载';
+                }
+            }
+            
+            // 计算当前位置
+            const index = Math.floor(oht.pathIndex);
+            const nextIndex = Math.min(index + 1, oht.route.length - 1);
+            const progress = oht.pathIndex - index;
+            
+            const currentPos = oht.route[index];
+            const nextPos = oht.route[nextIndex];
+            
+            const x = currentPos.x + (nextPos.x - currentPos.x) * progress;
+            const y = currentPos.y + (nextPos.y - currentPos.y) * progress;
+            
+            // 绘制路径
+            if (oht.status === 'running') {
+                // 绘制路径外层
+                ctx.strokeStyle = 'rgba(0, 255, 136, 0.2)';
+                ctx.lineWidth = 8;
+                ctx.beginPath();
+                for (let i = 0; i < oht.route.length - 1; i++) {
+                    ctx.moveTo(oht.route[i].x, oht.route[i].y);
+                    ctx.lineTo(oht.route[i + 1].x, oht.route[i + 1].y);
+                }
+                ctx.stroke();
+                
+                // 绘制路径主线
+                ctx.strokeStyle = 'rgba(0, 255, 136, 0.6)';
+                ctx.lineWidth = 5;
+                ctx.beginPath();
+                for (let i = 0; i < oht.route.length - 1; i++) {
+                    ctx.moveTo(oht.route[i].x, oht.route[i].y);
+                    ctx.lineTo(oht.route[i + 1].x, oht.route[i + 1].y);
+                }
+                ctx.stroke();
+            }
+            
+            // 绘制OHT
+            const colors = {
+                running: '#00ff88',
+                idle: '#ffaa00',
+                error: '#ff3333'
+            };
+            
+            // 绘制光晕效果（减弱）
+            const gradient = ctx.createRadialGradient(x, y, 0, x, y, 18);
+            gradient.addColorStop(0, colors[oht.status]);
+            gradient.addColorStop(0.5, `${colors[oht.status]}60`);
+            gradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(x, y, 18, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制主体
+            ctx.fillStyle = colors[oht.status] || '#fff';
+            ctx.beginPath();
+            ctx.arc(x, y, 12, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制边框
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(x, y, 12, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // 绘制内圈
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.beginPath();
+            ctx.arc(x, y, 7, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制中心点
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(x, y, 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 绘制标签背景
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(x - 15, y + 18, 30, 16);
+            
+            // 绘制标签
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 11px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(oht.id.split('-')[1], x, y + 29);
+            
+            // 如果有载货，显示标记
+            if (oht.load !== '空载') {
+                ctx.font = 'bold 18px Arial';
+                ctx.fillText('📦', x, y - 22);
+            }
+            
+            // 绘制方向指示器
+            if (oht.status === 'running' && nextPos) {
+                const angle = Math.atan2(nextPos.y - currentPos.y, nextPos.x - currentPos.x);
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle);
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.moveTo(8, 0);
+                ctx.lineTo(3, -3);
+                ctx.lineTo(3, 3);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // 更新信息面板
+        function updateInfoPanel() {
+            const listContainer = document.getElementById('ohtList');
+            listContainer.innerHTML = '';
+            
+            let running = 0, idle = 0, error = 0;
+            
+            ohts.forEach(oht => {
+                if (oht.status === 'running') running++;
+                else if (oht.status === 'idle') idle++;
+                else if (oht.status === 'error') error++;
+                
+                const statusText = {
+                    running: '运行中',
+                    idle: '空闲',
+                    error: '故障'
+                };
+                
+                const statusClass = {
+                    running: 'status-running',
+                    idle: 'status-idle',
+                    error: 'status-error'
+                };
+                
+                const ohtElement = document.createElement('div');
+                ohtElement.className = `oht-item ${oht.status}`;
+                ohtElement.style.animationDelay = `${ohts.indexOf(oht) * 0.1}s`;
+                
+                // 计算电池状态
+                let batteryClass = '';
+                if (oht.battery <= 30) batteryClass = 'low';
+                else if (oht.battery <= 60) batteryClass = 'medium';
+                
+                ohtElement.innerHTML = `
+                    <div class="oht-item-id">#${oht.id.split('-')[1]}</div>
+                    <div class="oht-item-header">
+                        <div class="oht-item-title">
+                            <div class="oht-item-icon">🚡</div>
+                            <h3>${oht.name}</h3>
+                        </div>
+                        <span class="status-badge ${statusClass[oht.status]}">${statusText[oht.status]}</span>
+                    </div>
+                    <div class="oht-item-body">
+                        <!-- 关键指标区 -->
+                        <div class="oht-metrics">
+                            <div class="metric-card">
+                                <div class="metric-icon">⚡</div>
+                                <div class="metric-info">
+                                    <div class="metric-value">${oht.speed.toFixed(1)} m/s</div>
+                                    <div class="metric-label">速度</div>
+                                </div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-icon">🔋</div>
+                                <div class="metric-info">
+                                    <div class="metric-value" style="color: ${oht.battery > 60 ? '#00ff88' : oht.battery > 30 ? '#ffaa00' : '#ff3333'}">${Math.round(oht.battery)}%</div>
+                                    <div class="metric-label">电量</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 位置信息区 -->
+                        <div class="oht-locations">
+                            <div class="location-flow">
+                                <div class="location-item">
+                                    <div class="location-header">
+                                        <span class="location-icon">📍</span>
+                                        <span class="location-label">当前位置</span>
+                                    </div>
+                                    <div class="location-value">${getNodePosition(oht.currentNode)?.name || oht.currentNode}</div>
+                                </div>
+                                ${oht.targetNode ? `
+                                <div class="location-arrow">→</div>
+                                <div class="location-item">
+                                    <div class="location-header">
+                                        <span class="location-icon">🎯</span>
+                                        <span class="location-label">目标位置</span>
+                                    </div>
+                                    <div class="location-value">${getNodePosition(oht.targetNode)?.name || oht.targetNode}</div>
+                                </div>
+                                ` : `<div style="flex: 1; text-align: center; color: #666; font-size: 11px;">待命中...</div>`}
+                            </div>
+                        </div>
+                        
+                        <!-- 其他信息网格 -->
+                        <div class="oht-info-grid">
+                            <div class="info-item">
+                                <div class="info-icon">🏷️</div>
+                                <div class="info-content">
+                                    <div class="info-label">设备编号</div>
+                                    <div class="info-value">${oht.id}</div>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-icon">${oht.load !== '空载' ? '📦' : '⚪'}</div>
+                                <div class="info-content">
+                                    <div class="info-label">载货状态</div>
+                                    <div class="info-value">${oht.load}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                listContainer.appendChild(ohtElement);
+            });
+            
+            // 更新统计
+            document.getElementById('totalOHT').textContent = ohts.length;
+            document.getElementById('runningOHT').textContent = running;
+            document.getElementById('idleOHT').textContent = idle;
+            document.getElementById('errorOHT').textContent = error;
+        }
+
+        // 绘制扫描线效果
+        let scanLineY = 0;
+        function drawScanLine() {
+            // 水平扫描线
+            ctx.strokeStyle = `rgba(0, 212, 255, ${0.15 * Math.sin(Date.now() * 0.003)})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, scanLineY);
+            ctx.lineTo(canvas.width, scanLineY);
+            ctx.stroke();
+            
+            scanLineY += 2;
+            if (scanLineY > canvas.height) scanLineY = 0;
+        }
+
+        // 绘制角落装饰
+        function drawCornerDecorations() {
+            const cornerSize = 30;
+            const cornerThickness = 2;
+            
+            ctx.strokeStyle = 'rgba(0, 212, 255, 0.4)';
+            ctx.lineWidth = cornerThickness;
+            
+            // 左上角
+            ctx.beginPath();
+            ctx.moveTo(10, 10 + cornerSize);
+            ctx.lineTo(10, 10);
+            ctx.lineTo(10 + cornerSize, 10);
+            ctx.stroke();
+            
+            // 右上角
+            ctx.beginPath();
+            ctx.moveTo(canvas.width - 10 - cornerSize, 10);
+            ctx.lineTo(canvas.width - 10, 10);
+            ctx.lineTo(canvas.width - 10, 10 + cornerSize);
+            ctx.stroke();
+            
+            // 左下角
+            ctx.beginPath();
+            ctx.moveTo(10, canvas.height - 10 - cornerSize);
+            ctx.lineTo(10, canvas.height - 10);
+            ctx.lineTo(10 + cornerSize, canvas.height - 10);
+            ctx.stroke();
+            
+            // 右下角
+            ctx.beginPath();
+            ctx.moveTo(canvas.width - 10 - cornerSize, canvas.height - 10);
+            ctx.lineTo(canvas.width - 10, canvas.height - 10);
+            ctx.lineTo(canvas.width - 10, canvas.height - 10 - cornerSize);
+            ctx.stroke();
+        }
+
+        // 数据流效果
+        class DataStream {
+            constructor() {
+                this.reset();
+            }
+            
+            reset() {
+                const edge = Math.floor(Math.random() * 4); // 0: 上, 1: 右, 2: 下, 3: 左
+                if (edge === 0) {
+                    this.x = Math.random() * canvas.width;
+                    this.y = 0;
+                    this.vx = 0;
+                    this.vy = 2;
+                } else if (edge === 1) {
+                    this.x = canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.vx = -2;
+                    this.vy = 0;
+                } else if (edge === 2) {
+                    this.x = Math.random() * canvas.width;
+                    this.y = canvas.height;
+                    this.vx = 0;
+                    this.vy = -2;
+                } else {
+                    this.x = 0;
+                    this.y = Math.random() * canvas.height;
+                    this.vx = 2;
+                    this.vy = 0;
+                }
+                this.length = Math.random() * 30 + 20;
+                this.opacity = Math.random() * 0.5 + 0.3;
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                    this.reset();
+                }
+            }
+            
+            draw() {
+                const gradient = ctx.createLinearGradient(
+                    this.x, this.y,
+                    this.x - this.vx * this.length, this.y - this.vy * this.length
+                );
+                gradient.addColorStop(0, `rgba(0, 212, 255, ${this.opacity})`);
+                gradient.addColorStop(1, 'transparent');
+                
+                ctx.strokeStyle = gradient;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x - this.vx * this.length, this.y - this.vy * this.length);
+                ctx.stroke();
+            }
+        }
+
+        const dataStreams = [];
+        for (let i = 0; i < 10; i++) {
+            dataStreams.push(new DataStream());
+        }
+
+        // 主渲染循环
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制背景元素
+            drawCornerDecorations();
+            
+            // 绘制数据流
+            dataStreams.forEach(stream => {
+                stream.update();
+                stream.draw();
+            });
+            
+            // 绘制扫描线
+            drawScanLine();
+            
+            // 绘制主要内容
+            drawPaths();
+            drawNodes();
+            
+            ohts.forEach(oht => drawOHT(oht));
+            
+            requestAnimationFrame(render);
+        }
+
+        // 更新时钟
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            document.getElementById('currentTime').textContent = timeString;
+        }
+
+        // 定期更新信息
+        setInterval(updateInfoPanel, 1000);
+        setInterval(updateClock, 1000);
+
+        // 启动
+        updateInfoPanel();
+        updateClock();
+        render();
+
+        // 模拟电池消耗和状态变化
+        setInterval(() => {
+            ohts.forEach(oht => {
+                if (oht.status === 'running') {
+                    oht.battery = Math.max(20, oht.battery - Math.random() * 0.5);
+                    
+                    // 随机故障
+                    if (Math.random() < 0.001) {
+                        oht.status = 'error';
+                    }
+                } else if (oht.status === 'error') {
+                    // 故障恢复
+                    if (Math.random() < 0.01) {
+                        oht.status = 'idle';
+                    }
+                } else if (oht.status === 'idle') {
+                    oht.battery = Math.min(100, oht.battery + Math.random() * 0.3);
+                    
+                    // 随机接到任务
+                    if (Math.random() < 0.02) {
+                        const randomNode = nodes[Math.floor(Math.random() * nodes.length)];
+                        oht.targetNode = randomNode.id;
+                        oht.route = generateRoute(oht.currentNode, oht.targetNode);
+                        oht.pathIndex = 0;
+                        oht.status = 'running';
+                    }
+                }
+            });
+        }, 100);
+    </script>
+</body>
+</html>
+

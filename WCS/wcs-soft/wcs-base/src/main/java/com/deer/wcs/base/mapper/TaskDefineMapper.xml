@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.base.dao.TaskDefineMapper">
+    
+    <resultMap type="com.deer.wcs.base.model.TaskDefine" id="TaskDefineResult">
+        <result property="id"    column="id"    />
+        <result property="wareCode"    column="ware_code"    />
+        <result property="areaCode"    column="area_code"    />
+        <result property="type"    column="type"    />
+        <result property="name"    column="name"    />
+        <result property="jobIndex"    column="job_index"    />
+        <result property="fromCellCode"    column="from_cell_code"    />
+        <result property="toCellCode"    column="to_cell_code"    />
+        <result property="lastId"    column="last_id"    />
+        <result property="isJudgeStep"    column="is_judge_step"    />
+        <result property="judgeBranchType"    column="judge_branch_type"    />
+        <result property="positionX"    column="position_x"    />
+        <result property="positionY"    column="position_y"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="TaskDefineResult"  type="com.deer.wcs.base.model.TaskDefineDto" >
+    </resultMap>
+
+    <sql id="selectTaskDefineVo">
+        select * from task_define
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.base.model.TaskDefineCriteria" resultMap="Dto">
+        <include refid="selectTaskDefineVo"/>
+        <where>
+            <if test="wareCode != null  and wareCode != ''"> and ware_code = #{wareCode}</if>
+            <if test="areaCode != null  and areaCode != ''"> and area_code = #{areaCode}</if>
+            <if test="type != null "> and type = #{type}</if>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="jobIndex != null "> and job_index = #{jobIndex}</if>
+            <if test="createTime != null  and createTime != ''"> and create_time like concat(#{createTime},'%')</if>
+        </where>
+    </select>
+    
+    <select id="selectTaskDefineById" parameterType="Long" resultMap="TaskDefineResult">
+        <include refid="selectTaskDefineVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="getTaskPriorityList" resultType="com.deer.wcs.base.model.TaskTypePriority">
+        select id,code,name,priority from task_type_priority order by priority
+    </select>
+
+    <insert id="insertTaskDefine" parameterType="com.deer.wcs.base.model.TaskDefine">
+        insert into task_define
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="wareCode != null">ware_code,</if>
+            <if test="areaCode != null">area_code,</if>
+            <if test="type != null">type,</if>
+            <if test="name != null">name,</if>
+            <if test="jobIndex != null">job_index,</if>
+            <if test="fromCellCode != null">from_cell_code,</if>
+            <if test="toCellCode != null">to_cell_code,</if>
+            <if test="lastId != null">last_id,</if>
+            <if test="isJudgeStep != null">is_judge_step,</if>
+            <if test="judgeBranchType != null">judge_branch_type,</if>
+            <if test="positionX != null">position_x,</if>
+            <if test="positionY != null">position_y,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="wareCode != null">#{wareCode},</if>
+            <if test="areaCode != null">#{areaCode},</if>
+            <if test="type != null">#{type},</if>
+            <if test="name != null">#{name},</if>
+            <if test="jobIndex != null">#{jobIndex},</if>
+            <if test="fromCellCode != null">#{fromCellCode},</if>
+            <if test="toCellCode != null">#{toCellCode},</if>
+            <if test="lastId != null">#{lastId},</if>
+            <if test="isJudgeStep != null">#{isJudgeStep},</if>
+            <if test="judgeBranchType != null">#{judgeBranchType},</if>
+            <if test="positionX != null">#{positionX},</if>
+            <if test="positionY != null">#{positionY},</if>
+         </trim>
+    </insert>
+
+    <update id="updateTaskDefine" parameterType="com.deer.wcs.base.model.TaskDefine">
+        update task_define
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="wareCode != null">ware_code = #{wareCode},</if>
+            <if test="areaCode != null">area_code = #{areaCode},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="jobIndex != null">job_index = #{jobIndex},</if>
+            <if test="fromCellCode != null">from_cell_code = #{fromCellCode},</if>
+            <if test="toCellCode != null">to_cell_code = #{toCellCode},</if>
+            <if test="lastId != null">last_id = #{lastId},</if>
+            <if test="isJudgeStep != null">is_judge_step = #{isJudgeStep},</if>
+            <if test="judgeBranchType != null">judge_branch_type = #{judgeBranchType},</if>
+            <if test="positionX != null">position_x = #{positionX},</if>
+            <if test="positionY != null">position_y = #{positionY},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteTaskDefineById" parameterType="Long">
+        delete from task_define where id = #{id}
+    </delete>
+
+    <delete id="deleteTaskDefineByIds" parameterType="String">
+        delete from task_define where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 清理指向目标步骤的 last_id 和 judge_branch_type -->
+    <update id="clearLastIdByTargetId" parameterType="Long">
+        update task_define 
+        set last_id = null, 
+            judge_branch_type = null
+        where last_id = #{targetId}
+    </update>
+
+    <!-- 清空步骤的连线信息 -->
+    <update id="clearStepLink" parameterType="Long">
+        update task_define 
+        set last_id = null, 
+            judge_branch_type = null
+        where id = #{stepId}
+    </update>
+
+    <!-- 更新步骤的连线信息（支持设置为null） -->
+    <update id="updateStepLink">
+        update task_define 
+        set last_id = #{lastId}, 
+            judge_branch_type = #{judgeBranchType}
+        where id = #{stepId}
+    </update>
+
+    <!-- 更新步骤的位置 -->
+    <update id="updateStepPosition">
+        update task_define 
+        set position_x = #{positionX}, 
+            position_y = #{positionY}
+        where id = #{stepId}
+    </update>
+</mapper>

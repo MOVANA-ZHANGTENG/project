@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.base.dao.CellLinkMapper">
+    
+    <resultMap type="com.deer.wcs.base.model.CellLink" id="CellLinkResult">
+        <result property="id"    column="id"    />
+        <result property="fromCellId"    column="from_cell_id"    />
+        <result property="toCellId"    column="to_cell_id"    />
+        <result property="distance"    column="distance"    />
+        <result property="isBlocked"    column="is_blocked"    />
+        <result property="wareCode"    column="ware_code"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="CellLinkResult"  type="com.deer.wcs.base.model.CellLinkDto" >
+    </resultMap>
+
+    <sql id="selectCellLinkVo">
+        select * from cell_link
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.base.model.CellLinkCriteria" resultMap="Dto">
+        <include refid="selectCellLinkVo"/>
+        <where>  
+            <if test="fromCellId != null "> and from_cell_id = #{fromCellId}</if>
+            <if test="toCellId != null "> and to_cell_id = #{toCellId}</if>
+            <if test="distance != null "> and distance = #{distance}</if>
+            <if test="isBlocked != null "> and is_blocked = #{isBlocked}</if>
+            <if test="wareCode != null  and wareCode != ''"> and ware_code = #{wareCode}</if>
+        </where>
+    </select>
+    
+    <select id="selectCellLinkById" parameterType="Long" resultMap="CellLinkResult">
+        <include refid="selectCellLinkVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertCellLink" parameterType="com.deer.wcs.base.model.CellLink" useGeneratedKeys="true" keyProperty="id">
+        insert into cell_link
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="fromCellId != null">from_cell_id,</if>
+            <if test="toCellId != null">to_cell_id,</if>
+            <if test="distance != null">distance,</if>
+            <if test="isBlocked != null">is_blocked,</if>
+            <if test="wareCode != null">ware_code,</if>
+            <if test="createTime != null and createTime != ''">create_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="fromCellId != null">#{fromCellId},</if>
+            <if test="toCellId != null">#{toCellId},</if>
+            <if test="distance != null">#{distance},</if>
+            <if test="isBlocked != null">#{isBlocked},</if>
+            <if test="wareCode != null">#{wareCode},</if>
+            <if test="createTime != null and createTime != ''">#{createTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateCellLink" parameterType="com.deer.wcs.base.model.CellLink">
+        update cell_link
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="fromCellId != null">from_cell_id = #{fromCellId},</if>
+            <if test="toCellId != null">to_cell_id = #{toCellId},</if>
+            <if test="distance != null">distance = #{distance},</if>
+            <if test="isBlocked != null">is_blocked = #{isBlocked},</if>
+            <if test="wareCode != null">ware_code = #{wareCode},</if>
+            <if test="createTime != null and createTime != ''">create_time = #{createTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteCellLinkById" parameterType="Long">
+        delete from cell_link where id = #{id}
+    </delete>
+
+    <delete id="deleteCellLinkByIds" parameterType="String">
+        delete from cell_link where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.base.dao.ProductInfoMapper">
+    
+    <resultMap type="com.deer.wcs.base.model.ProductInfo" id="ProductInfoResult">
+        <result property="id"    column="id"    />
+        <result property="code"    column="code"    />
+        <result property="name"    column="name"    />
+        <result property="spec"    column="spec"    />
+        <result property="model"    column="model"    />
+        <result property="inCellTactics"    column="in_cell_tactics"    />
+        <result property="abc"    column="abc"    />
+        <result property="itemTypeCode"    column="item_type_code"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="ProductInfoResult"  type="com.deer.wcs.base.model.ProductInfoDto" >
+    </resultMap>
+
+    <sql id="selectProductInfoVo">
+        select id, code, name, spec, model, in_cell_tactics, abc, item_type_code from product_info
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.base.model.ProductInfoCriteria" resultMap="Dto">
+        <include refid="selectProductInfoVo"/>
+        <where>  
+            <if test="code != null  and code != ''"> and code = #{code}</if>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="spec != null  and spec != ''"> and spec = #{spec}</if>
+            <if test="model != null  and model != ''"> and model = #{model}</if>
+            <if test="inCellTactics != null  and inCellTactics != ''"> and in_cell_tactics = #{inCellTactics}</if>
+            <if test="abc != null  and abc != ''"> and abc = #{abc}</if>
+            <if test="itemTypeCode != null  and itemTypeCode != ''"> and item_type_code = #{itemTypeCode}</if>
+        </where>
+    </select>
+    
+    <select id="selectProductInfoById" parameterType="Long" resultMap="ProductInfoResult">
+        <include refid="selectProductInfoVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertProductInfo" parameterType="com.deer.wcs.base.model.ProductInfo" useGeneratedKeys="true" keyProperty="id">
+        insert into product_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="code != null">code,</if>
+            <if test="name != null">name,</if>
+            <if test="spec != null">spec,</if>
+            <if test="model != null">model,</if>
+            <if test="inCellTactics != null">in_cell_tactics,</if>
+            <if test="abc != null">abc,</if>
+            <if test="itemTypeCode != null">item_type_code,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="code != null">#{code},</if>
+            <if test="name != null">#{name},</if>
+            <if test="spec != null">#{spec},</if>
+            <if test="model != null">#{model},</if>
+            <if test="inCellTactics != null">#{inCellTactics},</if>
+            <if test="abc != null">#{abc},</if>
+            <if test="itemTypeCode != null">#{itemTypeCode},</if>
+         </trim>
+    </insert>
+
+    <update id="updateProductInfo" parameterType="com.deer.wcs.base.model.ProductInfo">
+        update product_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="code != null">code = #{code},</if>
+            <if test="name != null">name = #{name},</if>
+            <if test="spec != null">spec = #{spec},</if>
+            <if test="model != null">model = #{model},</if>
+            <if test="inCellTactics != null">in_cell_tactics = #{inCellTactics},</if>
+            <if test="abc != null">abc = #{abc},</if>
+            <if test="itemTypeCode != null">item_type_code = #{itemTypeCode},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteProductInfoById" parameterType="Long">
+        delete from product_info where id = #{id}
+    </delete>
+
+    <delete id="deleteProductInfoByIds" parameterType="String">
+        delete from product_info where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

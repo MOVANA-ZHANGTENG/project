@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.base.dao.PositionSourceMapper">
+    
+    <resultMap type="com.deer.wcs.base.model.PositionSource" id="PositionSourceResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+        <result property="imgUrl"    column="img_url"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="PositionSourceResult"  type="com.deer.wcs.base.model.PositionSourceDto" >
+    </resultMap>
+
+    <sql id="selectPositionSourceVo">
+        select id, name, img_url from position_source
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.base.model.PositionSourceCriteria" resultMap="Dto">
+        <include refid="selectPositionSourceVo"/>
+        <where>
+            del_flag = 0
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="imgUrl != null  and imgUrl != ''"> and img_url = #{imgUrl}</if>
+        </where>
+    </select>
+    
+    <select id="selectPositionSourceById" parameterType="Long" resultMap="PositionSourceResult">
+        <include refid="selectPositionSourceVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertPositionSource" parameterType="com.deer.wcs.base.model.PositionSource" useGeneratedKeys="true" keyProperty="id">
+        insert into position_source
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null">name,</if>
+            <if test="imgUrl != null">img_url,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="name != null">#{name},</if>
+            <if test="imgUrl != null">#{imgUrl},</if>
+         </trim>
+    </insert>
+
+    <update id="updatePositionSource" parameterType="com.deer.wcs.base.model.PositionSource">
+        update position_source
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null">name = #{name},</if>
+            <if test="imgUrl != null">img_url = #{imgUrl},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deletePositionSourceById" parameterType="Long">
+        delete from position_source where id = #{id}
+    </delete>
+
+    <delete id="deletePositionSourceByIds" parameterType="String">
+        delete from position_source where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.deer.wcs.task.dao.SaoMaSuccessMapper">
+    
+    <resultMap type="com.deer.wcs.task.model.SaoMaSuccess" id="SaoMaSuccessResult">
+        <result property="id"    column="id"    />
+        <result property="type"    column="type"    />
+        <result property="classTime"    column="class_time"    />
+        <result property="classNumber"    column="class_number"    />
+        <result property="classSuccess"    column="class_success"    />
+        <result property="taskNumber"    column="task_number"    />
+        <result property="taskSuccess"    column="task_success"    />
+        <result property="taskNumberAll"    column="task_number_all"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <resultMap id="Dto" extends="SaoMaSuccessResult"  type="com.deer.wcs.task.model.SaoMaSuccessDto" >
+    </resultMap>
+
+    <sql id="selectSaoMaSuccessVo">
+        select id, type, class_time, class_number, class_success,task_number,task_number_all,task_success,create_time from sao_ma_success
+    </sql>
+
+    <select id="findList" parameterType="com.deer.wcs.task.model.SaoMaSuccessCriteria" resultMap="Dto">
+        <include refid="selectSaoMaSuccessVo"/>
+        <where>  
+            <if test="type != null "> and type = #{type}</if>
+            <if test="classTime != null  and classTime != ''"> and class_time = #{classTime}</if>
+            <if test="classNumber != null "> and class_number = #{classNumber}</if>
+            <if test="classSuccess != null  and classSuccess != ''"> and class_success = #{classSuccess}</if>
+        </where>
+        order by id desc
+    </select>
+    
+    <select id="selectSaoMaSuccessById" parameterType="Long" resultMap="SaoMaSuccessResult">
+        <include refid="selectSaoMaSuccessVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="findByTypeAndTime" resultMap="SaoMaSuccessResult">
+        select * from sao_ma_success
+        <where>
+            <!-- 白班：当天08:00-20:00（逻辑不变） -->
+            <if test='classTime == "1"'>
+                create_time BETWEEN CONCAT(CURDATE(), ' 08:00:00') AND CONCAT(CURDATE(), ' 20:00:00')
+            </if>
+
+            <!-- 夜班：动态适配凌晨/非凌晨查询，确保跨天范围正确 -->
+            <if test='classTime == "2"'>
+                <!-- 用当前时间判断：是否处于凌晨00:00-08:00 -->
+                <choose>
+                    <!-- 情况1：当前时间在00:00-08:00（凌晨查询）→ 查前一天20:00到当天08:00 -->
+                    <when test="currentHour &lt; 8">
+                        (
+                        create_time >= CONCAT(DATE_SUB(CURDATE(), INTERVAL 1 DAY), ' 20:00:00')
+                        AND create_time &lt;= CONCAT(CURDATE(), ' 08:00:00')
+                        )
+                    </when>
+                    <!-- 情况2：当前时间在08:00-24:00 → 查当天20:00到次日08:00 -->
+                    <otherwise>
+                        (
+                        create_time >= CONCAT(CURDATE(), ' 20:00:00')
+                        AND create_time &lt;= CONCAT(DATE_ADD(CURDATE(), INTERVAL 1 DAY), ' 08:00:00')
+                        )
+                    </otherwise>
+                </choose>
+            </if>
+
+            <!-- 类型条件（逻辑不变） -->
+            <if test="type != null">
+                and type = #{type}
+            </if>
+        </where>
+        limit 1
+    </select>
+
+    <select id="findByTypeAndTime2" resultMap="SaoMaSuccessResult">
+        select * from sao_ma_success
+        WHERE
+        <!-- 处理 XML 语法冲突 + 非空判断 -->
+        <if test="beginTime != null and endTime != null and beginTime &lt;= endTime">
+            create_time BETWEEN
+            CONCAT(#{beginTime}, ' 00:00:00')
+            AND
+            CONCAT(#{endTime}, ' 23:59:59')
+        </if>
+
+        <if test="type != null">
+            and type = #{type}
+        </if>
+    </select>
+
+    <insert id="insertSaoMaSuccess" parameterType="com.deer.wcs.task.model.SaoMaSuccess">
+        insert into sao_ma_success
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="type != null">type,</if>
+            <if test="classTime != null">class_time,</if>
+            <if test="classNumber != null">class_number,</if>
+            <if test="classSuccess != null">class_success,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="type != null">#{type},</if>
+            <if test="classTime != null">#{classTime},</if>
+            <if test="classNumber != null">#{classNumber},</if>
+            <if test="classSuccess != null">#{classSuccess},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSaoMaSuccess" parameterType="com.deer.wcs.task.model.SaoMaSuccess">
+        update sao_ma_success
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="type != null">type = #{type},</if>
+            <if test="classTime != null">class_time = #{classTime},</if>
+            <if test="classNumber != null">class_number = #{classNumber},</if>
+            <if test="classSuccess != null">class_success = #{classSuccess},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSaoMaSuccessById" parameterType="Long">
+        delete from sao_ma_success where id = #{id}
+    </delete>
+
+    <delete id="deleteSaoMaSuccessByIds" parameterType="String">
+        delete from sao_ma_success where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
